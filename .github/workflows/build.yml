@@ -216,11 +216,14 @@ jobs:
         with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
       - run: dotnet workload install android --skip-manifest-update
       # Les licences du SDK de l'image sont déjà acceptées par GitHub ; on n'ajoute pas AcceptAndroidSDKLicenses (décision de l'utilisateur).
+      # Échec observé (run 40361968206) avec ANDROID_NDK_LATEST_HOME = NDK 30.0.16248370 (clang 21) : « ld.lld : error : duplicate symbol: __unw_init_local »
+      # (libunwind.a du NDK et libRuntime.WorkstationGC.a du runtime NativeAOT android 10.0.14 définissent les mêmes symboles).
+      # NDK r27 (ANDROID_NDK_HOME = 27.3.13750724, défaut de l'image) : même série que le r27c qui lie ici en local.
       - name: "APK NativeAOT arm64 et x64 (expérimental), signés avec la clé de débogage"
         run: |
           for abi in android-arm64 android-x64; do
             dotnet publish app/HostAndroid -c Release -r $abi -p:AndroidNativeAot=true -p:AndroidSdkDirectory="$ANDROID_HOME" \
-              -p:AndroidNdkDirectory="$ANDROID_NDK_LATEST_HOME" -p:JavaSdkDirectory="$JAVA_HOME_17_X64" -o out/android-naot-$abi
+              -p:AndroidNdkDirectory="$ANDROID_NDK_HOME" -p:JavaSdkDirectory="$JAVA_HOME_17_X64" -o out/android-naot-$abi
           done
       - name: "ne garder que les APK signés"
         run: |
