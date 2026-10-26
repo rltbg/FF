@@ -29,6 +29,8 @@ let rec texts (n: Node) : string list =
   | Heading s | Text s -> [ s ]
   | Button (l, _) | Check (l, _, _) -> [ l ]
   | Input (_, v, _) -> [ v ]
+  | BigList (r, sel) -> [ "BigList " + string r + " sel=" + string sel ]
+  | BigText id -> [ "BigText " + string id ]
 
 [<EntryPoint>]
 let main argv =

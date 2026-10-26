@@ -1,0 +1,10 @@
+module Sc_RBMap
+module R = FStar.RBMap
+open MxUtil
+let rec build (n:nat) (m:R.t int int) : FStar.All.ML (R.t int int) =
+  if n = 0 then m else build (n - 1) (R.add (blur n) (blur n) m)
+let main () : FStar.All.ML unit =
+  let n : nat = blur @N@ in
+  let m = build n (R.empty ()) in
+  check (R.lookup 1 m = Some 1);
+  FStar.IO.print_string "OK\n"

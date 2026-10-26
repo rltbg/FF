@@ -32,14 +32,20 @@ type Runner(initial: CoreApi, window: Window) as this =
   let mutable renders = 0
   let interp =
     Interp((fun msg -> this.Dispatch msg),
-           (fun tag text -> this.Dispatch(api.MsgOfInput tag text)))
+           (fun tag text -> this.Dispatch(api.MsgOfInput tag text)),
+           (fun i -> this.Dispatch(api.MsgOfSelect i)),
+           (fun id text -> this.Dispatch(api.MsgOfText id text)))
+
+  let mutable lastRenderMs = 0.0
 
   let render () =
+    let t0 = Diagnostics.Stopwatch.GetTimestamp()
     let root = interp.Render(api.View model)
     if host.Children.Count <> 1 || not (obj.ReferenceEquals(host.Children.[0], root)) then
       host.Children.Clear()
       host.Children.Add root
     renders <- renders + 1
+    lastRenderMs <- Diagnostics.Stopwatch.GetElapsedTime(t0).TotalMilliseconds
     this.OnRender model
 
   do
@@ -51,6 +57,10 @@ type Runner(initial: CoreApi, window: Window) as this =
   member _.Render() = render ()
   member _.Model = model
   member _.CurrentApi = api
+  /// Durée du dernier rendu (vue F* + réconciliation Avalonia), en ms.
+  member _.LastRenderMs = lastRenderMs
+  /// Applique des messages sans rendre (préchargement de test).
+  member _.Preload(msgs: obj list) = for m in msgs do model <- api.Update model m
   member _.Renders = renders
   member _.Dispatch(msg: obj) =
     model <- api.Update model msg

@@ -1,0 +1,12 @@
+module Sc_Seq
+module Seq = FStar.Seq
+open MxUtil
+let rec build (n:nat) (acc:Seq.seq int) : FStar.All.ML (Seq.seq int) =
+  if n = 0 then acc else build (n - 1) (Seq.cons (blur n) acc)
+let main () : FStar.All.ML unit =
+  let n : nat = blur @N@ in
+  let s = build n Seq.empty in
+  let l = Seq.length s in
+  check (l = n);
+  if l > 0 then check (Seq.index s (l - 1) = n);   (* dernier élément : O(n) pour une liste *)
+  FStar.IO.print_string "OK\n"

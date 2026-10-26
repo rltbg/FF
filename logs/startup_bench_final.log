@@ -1,0 +1,49 @@
+AOT défaut: fenêtre en ms  1er=90 médiane=111.0 p95=142 min=90 max=142 | RSS repos Ko médiane=109414.0 max=110468
+AOT logiciel: fenêtre en ms  1er=61 médiane=63.0 p95=80 min=49 max=80 | RSS repos Ko médiane=39572.0 max=39728
+JIT défaut: fenêtre en ms  1er=685 médiane=716.0 p95=916 min=634 max=916 | RSS repos Ko médiane=156422.0 max=156680
+JIT logiciel: fenêtre en ms  1er=625 médiane=622.0 p95=730 min=583 max=730 | RSS repos Ko médiane=88050.0 max=88196
+AOT froid (cache de pages vidé, 1 run, rendu défaut): 374 ms
+JIT froid (cache de pages vidé, 1 run, rendu défaut): 1192 ms
+
+JIT:
+fnv_bytes 64 octets (byte[]): 0.132 us/op
+fnv 64 octets (liste): 0.091 us/op
+fnv_utf8 nom de 12 car.: 0.046 us/op
+items=1000
+update Inc+Dec: 0.106 us/op
+update Toggle (1000 items): 19.621 us/op
+view (1000 items): 116.166 us/op
+sink=2852904320
+N=1000 : construction 3 ms (1.73 us/update), mémoire 101 Ko, Toggle milieu 0.02 ms, view 0.10 ms (2008 feuilles)
+N=10000 : construction 65 ms (3.23 us/update), mémoire 848 Ko, Toggle milieu 0.21 ms, view 2.80 ms (20008 feuilles)
+N=100000 : construction 346 ms (1.73 us/update), mémoire 10859 Ko, Toggle milieu 8.84 ms, view 80.12 ms (200008 feuilles)
+fnv_utf8 sur le texte de 1 Mo: 3643.248 us/op
+HashText (update) sur le texte de 1 Mo: 2306.764 us/op
+Select (update): 0.059 us/op
+sink=3045705360
+AOT:
+fnv_bytes 64 octets (byte[]): 0.057 us/op
+fnv 64 octets (liste): 0.092 us/op
+fnv_utf8 nom de 12 car.: 0.058 us/op
+items=1000
+update Inc+Dec: 0.084 us/op
+update Toggle (1000 items): 28.488 us/op
+view (1000 items): 119.152 us/op
+sink=2852904320
+N=1000 : construction 2 ms (0.78 us/update), mémoire 101 Ko, Toggle milieu 0.03 ms, view 0.14 ms (2008 feuilles)
+N=10000 : construction 32 ms (1.60 us/update), mémoire 1015 Ko, Toggle milieu 0.36 ms, view 3.05 ms (20008 feuilles)
+N=100000 : construction 238 ms (1.19 us/update), mémoire 10859 Ko, Toggle milieu 17.38 ms, view 81.21 ms (200008 feuilles)
+fnv_utf8 sur le texte de 1 Mo: 3027.410 us/op
+HashText (update) sur le texte de 1 Mo: 2346.036 us/op
+Select (update): 0.054 us/op
+sink=3045705360
+
+Tailles (octets) :
+46562352 HostStatic.dbg
+20697432 HostStatic
+11170296 libSkiaSharp.so
+2808040 libHarfBuzzSharp.so
+17668 Extracted.pdb
+9788 Ui.pdb
+3454704 Tests (AOT)
+Total livrable hors .dbg/.pdb : 34675768

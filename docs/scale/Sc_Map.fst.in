@@ -1,0 +1,10 @@
+module Sc_Map
+module M = FStar.Map
+open MxUtil
+let rec build (n:nat) (m:M.t int int) : FStar.All.ML (M.t int int) =
+  if n = 0 then m else build (n - 1) (M.upd m n (blur n))
+let main () : FStar.All.ML unit =
+  let n : nat = blur @N@ in
+  let m = build n (M.const 0) in
+  check (M.sel m n = n);               (* clé la plus ancienne (premier upd) : traverse toute la chaîne de fermetures *)
+  FStar.IO.print_string "OK\n"

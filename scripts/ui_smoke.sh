@@ -33,6 +33,21 @@ c 237 41; c 270 115; xdotool type --delay 10 "Ada Lovelace"; c 270 155 0; xdotoo
 expect accepte "status=accepted:Ada Lovelace,36,4267605246"; shot 3_accepte
 c 270 155; xdotool key ctrl+a; xdotool type --delay 10 "200"; c 60 193
 expect rejete "age=200 status=rejected:âge : entier décimal entre 0 et 150"; shot 4_rejete
-echo "rendus journalisés : $(wc -l < "$MVU_TRACE") ; RSS : $(awk '/VmRSS/{print $2}' /proc/$P/status) Ko"
+# --- onglet Volumes : liste de 100 000 lignes (virtualisée, côté hôte) et texte de ~1 Mo haché par F* ---
+EXPECT_DIGEST=$(python3 - <<'PY'
+t="".join("Texte %06d — éàü %d\n" % (i, i % 97) for i in range(38000))
+h=2166136261
+for b in t.encode(): h=((h^b)*16777619)&0xffffffff
+print("digest=1,%d,%d" % (len(t.encode("utf-16-le"))//2, h))
+PY
+)
+rss0=$(awk '/VmRSS/{print int($2/1024)}' /proc/$P/status)
+c 335 41; expect volumes "tab=big"; rss1=$(awk '/VmRSS/{print int($2/1024)}' /proc/$P/status)
+c 250 205; expect "select ligne 3" "sel=2 digest=-"
+xdotool key End; sleep 1.2; expect "fin de liste" "sel=99999"
+shot 5_volumes
+c 100 484; sleep 0.5; expect "hachage 1 Mo par F*" "$EXPECT_DIGEST"; shot 6_digest
+echo "RSS : $rss0 Mo avant l'onglet Volumes, $rss1 Mo juste après ; $(awk '/VmRSS/{print int($2/1024)}' /proc/$P/status) Mo en fin de test"
+echo "rendus journalisés : $(wc -l < "$MVU_TRACE")"
 kill $P 2>/dev/null; wait $P 2>/dev/null
 [ $fail -eq 0 ] && echo "SMOKE OK" || { echo "SMOKE KO"; exit 1; }

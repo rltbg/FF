@@ -5,7 +5,7 @@ module I32 = FStar.Int32
 module Str = FStar.String
 open FStar.List.Tot
 
-type tab = | TCounter | TItems | TForm
+type tab = | TCounter | TItems | TForm | TBig
 
 type item = { id: U32.t; text: string; checked: bool }
 
@@ -17,11 +17,20 @@ type msg =
   | AddItem | Remove of U32.t | Toggle of U32.t | ClearChecked
   | Typed of input_tag & string
   | Submit
+  | Select of U32.t              (* ligne choisie dans la grande liste (donnée côté hôte) *)
+  | HashText of U32.t & string   (* texte volumineux fourni par l'hôte : on ne garde que son condensé *)
 
 type form_status =
   | Editing
   | Rejected of list string
   | Accepted of string & (a:U32.t{U32.v a <= 150}) & U32.t   (* nom, âge, empreinte FNV-1a *)
+
+(* Grands volumes : les données (100 000 lignes, texte de 1 Mo) vivent côté hôte ; le modèle F* ne garde que
+   des identifiants et un condensé. *)
+let big_rows : U32.t = 100000ul
+let big_max_text : nat = 4000000   (* garde : taille maximale acceptée pour HashText (en unités UTF-16) *)
+
+type digest = { text_id: U32.t; len: U32.t; fnv: U32.t }
 
 type model = {
   tab: tab;
@@ -32,6 +41,8 @@ type model = {
   name: string;
   age: string;
   status: form_status;
+  sel: option U32.t;        (* ligne sélectionnée, < big_rows *)
+  digest: option digest;    (* condensé du dernier texte haché *)
 }
 
 (* ---------- invariants ---------- *)
@@ -42,12 +53,14 @@ let rec sorted_below (n:U32.t) (l:list item) : Tot bool (decreases l) =
   | [] -> true
   | x :: t -> U32.lt x.id n && sorted_below x.id t
 
+let sel_ok (s:option U32.t) : bool = match s with None -> true | Some i -> U32.lt i big_rows
+
 let inv (m:model) : bool =
-  counter_ok m.counter && sorted_below m.next_id m.items && U32.lt m.next_id 0xFFFFFFFFul
+  counter_ok m.counter && sorted_below m.next_id m.items && U32.lt m.next_id 0xFFFFFFFFul && sel_ok m.sel
 
 let init : (m:model{inv m}) =
   { tab = TCounter; counter = 0l; items = []; next_id = 0ul; draft = "";
-    name = ""; age = ""; status = Editing }
+    name = ""; age = ""; status = Editing; sel = None; digest = None }
 
 (* ---------- opérations sur la liste ---------- *)
 let rec remove_id (k:U32.t) (l:list item) : Tot (list item) (decreases l) =
@@ -124,6 +137,13 @@ let update (m:model{inv m}) (g:msg) : (m':model{inv m'}) =
   | Typed (InName, s) -> { m with name = s; status = Editing }
   | Typed (InAge, s)  -> { m with age = s; status = Editing }
   | Submit -> { m with status = submit_form m.name m.age }
+  | Select i -> if U32.lt i big_rows then { m with sel = Some i } else m
+  | HashText (id, s) ->
+    let n = Str.length s in
+    if n <= big_max_text then begin
+      Core.lemma_len_maxlen s;
+      { m with digest = Some { text_id = id; len = U32.uint_to_t n; fnv = Core.fnv_utf8 s } }
+    end else m
 
 (* lemmes d'application *)
 let lemma_inc_dec (m:model{inv m /\ I32.v m.counter < 1000})
@@ -156,6 +176,8 @@ type view_tree =
   | VButton of string & msg
   | VInput of input_tag & string & string        (* tag, valeur, indication *)
   | VCheck of string & bool & msg
+  | VBigList of U32.t & option U32.t   (* nombre de lignes (données côté hôte), ligne sélectionnée *)
+  | VBigText of U32.t                  (* texte volumineux côté hôte, identifié par un entier *)
 
 let item_row (x:item) : view_tree =
   VRow [ VCheck (x.text, x.checked, Toggle x.id); VButton ("✕", Remove x.id) ]
@@ -164,7 +186,8 @@ let tab_bar (t:tab) : view_tree =
   let mark (s:string) (b:bool) : string = if b then "● " ^ s else s in
   VRow [ VButton (mark "Compteur" (TCounter? t), Goto TCounter);
          VButton (mark "Liste" (TItems? t), Goto TItems);
-         VButton (mark "Formulaire" (TForm? t), Goto TForm) ]
+         VButton (mark "Formulaire" (TForm? t), Goto TForm);
+         VButton (mark "Volumes" (TBig? t), Goto TBig) ]
 
 let view_counter (m:model) : view_tree =
   VColumn [ VHeading "Compteur";
@@ -189,12 +212,51 @@ let view_form (m:model) : view_tree =
              VInput (InAge, m.age, "âge");
              VButton ("Valider", Submit) ] @ st)
 
+let view_big (m:model) : view_tree =
+  let sel_txt =
+    match m.sel with
+    | None -> "Aucune ligne sélectionnée"
+    | Some i -> "Ligne sélectionnée : " ^ U32.to_string i in
+  let dig_txt =
+    match m.digest with
+    | None -> "Texte non haché"
+    | Some d -> "Texte " ^ U32.to_string d.text_id ^ " : " ^ U32.to_string d.len ^ " caractères, FNV-1a "
+                ^ U32.to_string d.fnv in
+  VColumn [ VHeading "Gros volumes";
+            VText sel_txt;
+            VBigList (big_rows, m.sel);
+            VBigText 1ul;
+            VText dig_txt ]
+
 let view (m:model) : view_tree =
   VColumn [ tab_bar m.tab;
             (match m.tab with
              | TCounter -> view_counter m
              | TItems -> view_items m
-             | TForm -> view_form m) ]
+             | TForm -> view_form m
+             | TBig -> view_big m) ]
 
 (* point d'entrée pour l'hôte : l'hôte ne fabrique jamais de msg lui-même *)
 let msg_of_input (t:input_tag) (s:string) : msg = Typed (t, s)
+
+(* fabriques de messages pour l'hôte (il ne construit jamais un msg lui-même) *)
+let msg_of_select (i:U32.t) : msg = Select i
+let msg_of_text (id:U32.t) (s:string) : msg = HashText (id, s)
+
+(* ---------- lemmes des grands volumes ---------- *)
+let lemma_select (m:model{inv m}) (i:U32.t)
+  : Lemma (U32.v i < U32.v big_rows ==> (update m (Select i)).sel == Some i /\ (update m (Select i)).items == m.items)
+  = ()
+
+let lemma_select_out_of_range (m:model{inv m}) (i:U32.t{U32.v i >= U32.v big_rows})
+  : Lemma (update m (Select i) == m)
+  = ()
+
+(* HashText : le condensé est exactement (longueur, FNV-1a de l'UTF-8) du texte fourni, et seulement s'il n'est pas trop long. *)
+let lemma_hash_text (m:model{inv m}) (id:U32.t) (s:string)
+  : Lemma (let n = Str.length s in
+           if n <= big_max_text
+           then (update m (HashText (id, s))).digest ==
+                  Some ({ text_id = id; len = U32.uint_to_t n; fnv = Core.fnv_utf8 s })
+           else update m (HashText (id, s)) == m)
+  = if Str.length s <= big_max_text then Core.lemma_len_maxlen s

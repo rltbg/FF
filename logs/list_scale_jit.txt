@@ -1,0 +1,5 @@
+N=100 : rendu F* + réconciliation 127.6 ms ; interface occupée 1643 ms après le changement d'onglet ; cocher 1 élément : latence 114 ms (rendu 2.3 ms, coché=1), occupée 820 ms ensuite ; RSS 153 -> 179 Mo
+N=1000 : rendu F* + réconciliation 468.3 ms ; interface occupée 4937 ms après le changement d'onglet ; cocher 1 élément : latence 114 ms (rendu 9.4 ms, coché=1), occupée 825 ms ensuite ; RSS 154 -> 322 Mo
+N=2000 : rendu F* + réconciliation 870.3 ms ; interface occupée 5343 ms après le changement d'onglet ; cocher 1 élément : latence 114 ms (rendu 9.4 ms, coché=1), occupée 820 ms ensuite ; RSS 156 -> 478 Mo
+N=3000 : rendu F* + réconciliation 1298.0 ms ; interface occupée 5761 ms après le changement d'onglet ; cocher 1 élément : latence 119 ms (rendu 19.1 ms, coché=1), occupée 824 ms ensuite ; RSS 159 -> 646 Mo
+N=5000 : rendu F* + réconciliation 1865.0 ms ; interface occupée 8230 ms après le changement d'onglet ; cocher 1 élément : latence 195 ms (rendu 37.4 ms, coché=1), occupée 822 ms ensuite ; RSS 163 -> 968 Mo

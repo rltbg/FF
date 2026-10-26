@@ -1,9 +1,36 @@
 namespace Ui
 
+open System
+open System.Collections
 open Avalonia
 open Avalonia.Controls
 open Avalonia.Layout
 open Avalonia.Media
+
+/// Lignes de la grande liste, générées à la demande : IList non générique en lecture seule, que
+/// l'ItemsControl d'Avalonia virtualise (aucune des 100 000 chaînes n'existe tant qu'elle n'est pas affichée).
+type LazyRows(count: int, get: int -> string) =
+  interface IList with
+    member _.Item
+      with get (i: int) : obj = box (get i)
+      and set (_: int) (_: obj) = raise (NotSupportedException())
+    member _.Add(_: obj) : int = raise (NotSupportedException())
+    member _.Clear() = raise (NotSupportedException())
+    member _.Contains(_: obj) = false
+    member _.IndexOf(_: obj) = -1
+    member _.Insert(_: int, _: obj) = raise (NotSupportedException())
+    member _.Remove(_: obj) = raise (NotSupportedException())
+    member _.RemoveAt(_: int) = raise (NotSupportedException())
+    member _.IsFixedSize = true
+    member _.IsReadOnly = true
+  interface ICollection with
+    member _.Count = count
+    member _.IsSynchronized = false
+    member _.SyncRoot = box count
+    member _.CopyTo(_: Array, _: int) = raise (NotSupportedException())
+  interface IEnumerable with
+    member _.GetEnumerator() : IEnumerator = (Seq.init count get :> IEnumerable).GetEnumerator()
+  member _.Count = count
 
 /// État porté par un TextBox (dans Control.Tag) : le tag F* courant et le dernier texte connu.
 type internal InputState = { mutable InputTag: obj; mutable Last: string }
@@ -13,7 +40,10 @@ type internal InputState = { mutable InputTag: obj; mutable Last: string }
 /// propriétés changent. Les contrôles restent donc les mêmes objets entre deux rendus : un clic commencé
 /// avant un rendu n'est pas perdu et le focus/curseur des TextBox est conservé.
 /// Les msg/tags sont lus dans Control.Tag au moment de l'événement (jamais capturés dans une fermeture).
-type Interp(dispatch: obj -> unit, onInput: obj -> string -> unit) =
+type Interp(dispatch: obj -> unit,
+            onInput: obj -> string -> unit,
+            onSelect: uint32 -> unit,
+            onText: uint32 -> string -> unit) =
   /// vrai pendant que l'interpréteur modifie lui-même des propriétés : on ignore alors les événements
   let mutable patching = false
   let mutable current : (Node * Control) option = None
@@ -21,7 +51,7 @@ type Interp(dispatch: obj -> unit, onInput: obj -> string -> unit) =
   let kind (n: Node) =
     match n with
     | Column _ -> 0 | Row _ -> 1 | Heading _ -> 2 | Text _ -> 3
-    | Button _ -> 4 | Input _ -> 5 | Check _ -> 6
+    | Button _ -> 4 | Input _ -> 5 | Check _ -> 6 | BigList _ -> 7 | BigText _ -> 8
 
   let textOf (tb: TextBox) = if isNull tb.Text then "" else tb.Text
 
@@ -54,6 +84,22 @@ type Interp(dispatch: obj -> unit, onInput: obj -> string -> unit) =
             st.Last <- t
             onInput st.InputTag t)
       tb :> Control
+    | BigList (rows, selected) ->
+      let lb = ListBox(Height = 220.0, Width = 360.0, ItemsSource = LazyRows(int rows, BigData.row), Tag = box rows)
+      if selected >= 0L then lb.SelectedIndex <- int selected
+      lb.SelectionChanged.Add(fun _ ->
+        if not patching && lb.SelectedIndex >= 0 then onSelect (uint32 lb.SelectedIndex))
+      lb :> Control
+    | BigText id ->
+      // visualiseur de lignes virtualisé (lecture seule) : un TextBox de 1 Mo coûte ~170 Mo de RSS (mesuré).
+      // Le texte complet n'est jamais copié dans le modèle F* : il est construit et fourni à F* par le bouton.
+      let lines = ListBox(Height = 110.0, Width = 360.0, ItemsSource = LazyRows(BigData.textLines, BigData.line))
+      let b = Button(Content = "Hacher le texte (F*)", Tag = box id)
+      b.Click.Add(fun _ -> onText (unbox<uint32> b.Tag) BigData.text.Value)
+      let p = StackPanel(Spacing = 8.0)
+      p.Children.Add lines
+      p.Children.Add b
+      p :> Control
 
   let rec patch (old: Node) (c: Control) (n: Node) : Control =
     if kind old <> kind n then build n
@@ -90,6 +136,16 @@ type Interp(dispatch: obj -> unit, onInput: obj -> string -> unit) =
           st.Last <- value
           tb.Text <- value
         tb :> Control
+      | _, BigList (rows, selected), (:? ListBox as lb) ->
+        if unbox<uint32> lb.Tag <> rows then
+          lb.ItemsSource <- LazyRows(int rows, BigData.row)
+          lb.Tag <- box rows
+        let want = if selected >= 0L then int selected else -1
+        if lb.SelectedIndex <> want then lb.SelectedIndex <- want
+        lb :> Control
+      | _, BigText id, (:? Panel as p) ->
+        (p.Children.[1] :?> Button).Tag <- box id
+        p :> Control
       | _ -> build n
 
   /// Construit ou met à jour l'arbre ; renvoie la racine (même objet tant que la racine garde son genre).

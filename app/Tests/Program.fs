@@ -122,6 +122,7 @@ let indepInv (m: app_model) =
   && strictlyDecreasing ids
   && ids |> List.forall (fun i -> i < m.next_id)
   && m.next_id < UInt32.MaxValue
+  && (match m.sel with Some i -> i < 100000u | None -> true)
 
 let rec leaves (v: app_view_tree) : int =
   match v with
@@ -138,7 +139,9 @@ let randMsg (m: app_model) : app_msg =
   | 8 -> App_AddItem
   | 9 -> (match m.items with [] -> App_ClearChecked | xs -> App_Remove (List.item (rng.Next xs.Length) xs).id)
   | 10 -> (match m.items with [] -> App_ClearChecked | xs -> App_Toggle (List.item (rng.Next xs.Length) xs).id)
-  | _ -> (match rng.Next 4 with
+  | _ -> (match rng.Next 6 with
+          | 4 -> App_Select (uint32 (rng.Next 100100))          // dont des indices hors plage (>= 100000)
+          | 5 -> App_HashText (uint32 (rng.Next 3), randStr (rng.Next 40) "aZ é🙂\u0100")
           | 0 -> App_Typed (App_InName, randStr (rng.Next 25) "ab\t é🙂")
           | 1 -> App_Typed (App_InAge, randStr (rng.Next 5) "0123456789x")
           | 2 -> App_ClearChecked
@@ -170,6 +173,15 @@ let testUpdate () =
         let added = m.items.Length = before.items.Length + 1
         check "add : +1 ou refus" (added || m.items.Length = before.items.Length)
         check "add <=> name_ok" (added = core_name_ok (chars before.draft))   // lemma_add_grows
+      | App_Select i ->
+        // lemma_select / lemma_select_out_of_range
+        if i < 100000u then check "select : sel = Some i" (m.sel = Some i && m.items = before.items)
+        else check "select hors plage : modèle inchangé" (m = before)
+      | App_HashText (id, s) ->
+        // lemma_hash_text : condensé exact (longueur, FNV-1a de l'UTF-8) ; texte trop long : inchangé
+        if s.Length <= 4000000 then
+          check "hash : condensé" (m.digest = Some { text_id = id; len = uint32 s.Length; fnv = refFnvUtf8 s })
+        else check "hash trop long : inchangé" (m = before)
       | App_Remove k -> check "remove" (not (m.items |> List.exists (fun i -> i.id = k)))   // lemma_remove_gone
       | App_ClearChecked -> check "clear" (m.items |> List.forall (fun i -> not i.``checked``))
       | App_Submit ->
@@ -186,8 +198,25 @@ let testUpdate () =
       | _ -> ()
       check "view non vide" (leaves (app_view m) > 0)
 
+let testBig () =
+  // garde de taille de HashText : 4 000 000 unités acceptées, 4 000 001 refusées
+  let ok = app_update app_init (App_HashText (7u, String('a', 4000000)))
+  check "hash 4 000 000 accepté" (ok.digest = Some { text_id = 7u; len = 4000000u; fnv = refFnvUtf8 (String('a', 4000000)) })
+  let tooLong = app_update app_init (App_HashText (7u, String('a', 4000001)))
+  check "hash 4 000 001 refusé" (tooLong = app_init)
+  check "select 99999 accepté" ((app_update app_init (App_Select 99999u)).sel = Some 99999u)
+  check "select 100000 refusé" ((app_update app_init (App_Select 100000u)) = app_init)
+  check "select 4294967295 refusé" ((app_update app_init (App_Select UInt32.MaxValue)) = app_init)
+  // le texte de l'hôte (≈ 1 Mo) : empreinte F* = empreinte de référence
+  let sb = Text.StringBuilder()
+  for i in 0 .. 37999 do sb.Append("Texte ").Append(i.ToString("D6")).Append(" — éàü ").Append(string (i % 97)).Append('\n') |> ignore
+  let big = sb.ToString()
+  check "texte 1 Mo : 1 022 080 octets UTF-8" (Encoding.UTF8.GetByteCount big = 1022080)
+  let h = app_update app_init (App_HashText (1u, big))
+  check "texte 1 Mo : condensé" (h.digest = Some { text_id = 1u; len = uint32 big.Length; fnv = refFnvUtf8 big })
+
 let run () =
-  testFnv (); testParse (); testName (); testUpdate ()
+  testFnv (); testParse (); testName (); testUpdate (); testBig ()
   Console.WriteLine("checks=" + string checks + " fails=" + string fails)
   if fails = 0 then 0 else 1
 
@@ -213,6 +242,39 @@ let bench () =
   time "update Toggle (1000 items)" 20000 (fun () -> m <- app_update m (App_Toggle 500u))
   let mi = { m with tab = App_TItems }
   time "view (1000 items)" 5000 (fun () -> sink <- sink + uint32 (leaves (app_view mi)))
+  Console.WriteLine("sink=" + string sink)
+  // coût de garder N éléments dans le modèle F* (au lieu de les garder côté hôte)
+  for n in [ 1000; 10000; 100000 ] do
+    GC.Collect()
+    let mem0 = GC.GetTotalMemory true
+    let sw = Diagnostics.Stopwatch.StartNew()
+    let mutable big = app_init
+    for i in 1 .. n do
+      big <- app_update big (App_Typed (App_InNew, "item " + string i))
+      big <- app_update big App_AddItem
+    sw.Stop()
+    let build = sw.Elapsed.TotalMilliseconds
+    let mem1 = GC.GetTotalMemory true
+    let mid = (match List.item (n / 2) big.items with i -> i.id)
+    let swT = Diagnostics.Stopwatch.StartNew()
+    for _ in 1 .. 20 do big <- app_update big (App_Toggle mid)
+    swT.Stop()
+    let tab = { big with tab = App_TItems }
+    let swV = Diagnostics.Stopwatch.StartNew()
+    let mutable leavesN = 0
+    for _ in 1 .. 20 do leavesN <- leaves (app_view tab)
+    swV.Stop()
+    Console.WriteLine("N=" + string n + " : construction " + build.ToString("F0") + " ms (" + (build * 1000.0 / float (2 * n)).ToString("F2")
+                      + " us/update), mémoire " + ((mem1 - mem0) / 1024L).ToString() + " Ko, Toggle milieu " + (swT.Elapsed.TotalMilliseconds / 20.0).ToString("F2")
+                      + " ms, view " + (swV.Elapsed.TotalMilliseconds / 20.0).ToString("F2") + " ms (" + string leavesN + " feuilles)")
+    sink <- sink + uint32 big.items.Length
+  // texte de 1 Mo haché par la fonction F* prouvée
+  let sbT = Text.StringBuilder()
+  for i in 0 .. 37999 do sbT.Append("Texte ").Append(i.ToString("D6")).Append(" — éàü ").Append(string (i % 97)).Append('\n') |> ignore
+  let bigText = sbT.ToString()
+  time "fnv_utf8 sur le texte de 1 Mo" 50 (fun () -> sink <- sink + core_fnv_utf8 bigText)
+  time "HashText (update) sur le texte de 1 Mo" 50 (fun () -> sink <- sink + (app_update app_init (App_HashText (1u, bigText))).digest.Value.fnv)
+  time "Select (update)" 1000000 (fun () -> m <- app_update m (App_Select 4242u))
   Console.WriteLine("sink=" + string sink)
 
 [<EntryPoint>]

@@ -138,5 +138,10 @@ let lemma_empty_rejected () : Lemma (parse_nat [] == None) = ()
 let lemma_name_len (l:list C.char)
   : Lemma (requires name_ok l) (ensures length l >= 1 /\ length l <= 20) = ()
 
+(* Une chaîne d'au plus 2^30 unités UTF-16 peut être encodée (précondition de FStar.Bytes.utf8_encode). *)
+let lemma_len_maxlen (s:string)
+  : Lemma (requires Str.length s <= 4000000) (ensures Str.maxlen s (pow2 30))
+  = assert_norm (4000000 <= pow2 30)
+
 let lemma_name_ok_maxlen (s:string)
   : Lemma (requires name_ok (Str.list_of_string s)) (ensures Str.maxlen s (pow2 30)) = ()

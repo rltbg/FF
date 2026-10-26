@@ -1,0 +1,10 @@
+module Sc_Set
+module S = FStar.Set
+open MxUtil
+let rec build (n:nat) (s:S.set int) : FStar.All.ML (S.set int) =
+  if n = 0 then s else build (n - 1) (S.add (blur n) s)
+let main () : FStar.All.ML unit =
+  let n : nat = blur @N@ in
+  let s = build n S.empty in
+  check (S.mem n s);                   (* élément le plus ancien (premier add) : traverse toute la chaîne *)
+  FStar.IO.print_string "OK\n"

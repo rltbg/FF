@@ -8,3 +8,7 @@ pub/
 out/
 /tools/*/bin/
 /tools/*/obj/
+logs/matrix/
+logs/scale/
+shots/*.trace
+logs/loop/

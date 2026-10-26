@@ -33,13 +33,20 @@ cycle() { # étiquette mode : chronomètre sauvegarde -> rendu rechargé
 c 76 139; c 76 139; c 76 139; expect état "Valeur : 3"
 edit '"Valeur : "' '"Valeur HOT : "'; cycle A full; expect A "Valeur HOT : 3"; import -window root "$S/A.png"
 edit '| Reset -> { m with counter = 0l }' '| Reset -> { m with counter = 10l }'; cycle B full; c 126 139; expect B "Valeur HOT : 10"; import -window root "$S/B.png"
-edit '  status: form_status;
-}' '  status: form_status;
+edit '  digest: option digest;    (* condensé du dernier texte haché *)
+}' '  digest: option digest;    (* condensé du dernier texte haché *)
   note: string;
 }'
-edit 'status = Editing }' 'status = Editing; note = "" }'; cycle C full; expect C "Valeur HOT : 0"; import -window root "$S/C.png"
+edit 'sel = None; digest = None }' 'sel = None; digest = None; note = "" }'; cycle C full; expect C "Valeur HOT : 0"; import -window root "$S/C.png"
 grep -q "model-RESET" "$LOG" && echo "OK [C] modèle réinitialisé : $(grep -o 'model-RESET ([^)]*)' "$LOG" | tail -1)" || { echo "KO [C] pas de RESET"; fail=1; }
 c 76 139; edit '"Valeur HOT : "' '"Valeur LAX : "'; cycle D lax; expect D "Valeur LAX : 1"; import -window root "$S/D.png"
+# E : onglet Volumes (réflexion sur BigList/option) puis rechargement : sélection et condensé conservés
+c 335 41; c 250 205; expect "E sélection" "BigList 100000 sel=2"
+c 100 484; sleep 0.5; expect "E condensé" "Texte 1 : 832080"
+touch "$DLL"; for _ in $(seq 1 60); do grep -q "reloaded" <(tail -3 "$LOG") && [ "$(grep -c reloaded "$LOG")" -gt 4 ] && break; sleep 0.1; done; sleep 0.8
+expect "E après rechargement : sélection conservée" "BigList 100000 sel=2"
+expect "E après rechargement : condensé conservé" "Texte 1 : 832080"
+import -window root "$S/E.png"
 sleep 2.5; echo "après D, sans interaction : $(grep alc-alive "$LOG" | tail -1 | cut -d' ' -f2-)"
 xdotool mousemove 400 450 click 1; sleep 0.3; xdotool mousemove 450 500; sleep 4.5
 echo "déchargement ALC : $(grep alc-alive "$LOG" | tail -1 | cut -d' ' -f2-) (vivants/remplacés après GC)"

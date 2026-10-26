@@ -1,0 +1,28 @@
+Mx01_Char	OK	
+Mx02_CharU32	EXTRACT	* Error 395:   - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and     has no F# realization. 
+Mx03_CharOfInt	OK	
+Mx04_String	OK	
+Mx05_StringIndex	OK	
+Mx06_List	OK	
+Mx07_ListSort	OK	
+Mx08_Option	OK	
+Mx09_Seq	OK	
+Mx10_Set	OK	
+Mx11_Map	OK	
+Mx12_RBMap	OK	
+Mx13_OrdSet	OK	
+Mx14_UInt64	OK	
+Mx15_Int64	OK	
+Mx16_Cast	OK	
+Mx17_UInt128	OK	
+Mx18_Printf	OK	
+Mx19_PrimsInt	OK	
+Mx20_Bytes	OK	
+Mx21_Ghost	OK	
+Mx22_Poly	OK	
+Mx23_Exn	OK	
+Mx24_Float64	OK	
+Mx25_PrimsIntDivNeg	RUN	FAIL 
+Mx26_UnaryMinus	EXTRACT	* Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+Mx27_PrimsAbs	EXTRACT	* Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+Mx28_Int32DivNeg	OK	

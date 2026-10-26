@@ -19,19 +19,19 @@ Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:11.73
+Time Elapsed 00:00:09.93
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:06.52
+Time Elapsed 00:00:05.75
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:04.68
+Time Elapsed 00:00:04.81
   Ui -> /home/user/ff/app/Ui/bin/Release/net10.0/Ui.dll
   Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
   HostStatic -> /home/user/ff/app/HostStatic/bin/Release/net10.0/linux-x64/HostStatic.dll
@@ -43,15 +43,15 @@ Time Elapsed 00:00:04.68
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/Tests/Tests.fsproj]
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/Tests/Tests.fsproj]
   Tests -> /home/user/ff/out/Tests/
-######## durée 104 s
+######## durée 102 s
 
 ######## tests JIT + AOT
-JIT: checks=949803 fails=0
-AOT: checks=949803 fails=0
+JIT: checks=950833 fails=0
+AOT: checks=950833 fails=0
 ######## durée 1 s
 
 ######## GUI AOT
-OK fenêtre _NET_WM_PID=22448 = PID 22448
+OK fenêtre _NET_WM_PID=20826 = PID 20826
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
@@ -59,12 +59,17 @@ OK [cocher] items=poires[x],pommes[ ]
 OK [supprimer] items=pommes[ ] 
 OK [accepte] status=accepted:Ada Lovelace,36,4267605246
 OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
-rendus journalisés : 68 ; RSS : 122680 Ko
+OK [volumes] tab=big
+OK [select ligne 3] sel=2 digest=-
+OK [fin de liste] sel=99999
+OK [hachage 1 Mo par F*] digest=1,832080,1791175457
+RSS : 113 Mo avant l'onglet Volumes, 114 Mo juste après ; 118 Mo en fin de test
+rendus journalisés : 72
 SMOKE OK
-######## durée 14 s
+######## durée 18 s
 
 ######## GUI JIT
-OK fenêtre _NET_WM_PID=22621 = PID 22621
+OK fenêtre _NET_WM_PID=21031 = PID 21031
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
@@ -72,34 +77,43 @@ OK [cocher] items=poires[x],pommes[ ]
 OK [supprimer] items=pommes[ ] 
 OK [accepte] status=accepted:Ada Lovelace,36,4267605246
 OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
-rendus journalisés : 68 ; RSS : 183172 Ko
+OK [volumes] tab=big
+OK [select ligne 3] sel=2 digest=-
+OK [fin de liste] sel=99999
+OK [hachage 1 Mo par F*] digest=1,832080,1791175457
+RSS : 172 Mo avant l'onglet Volumes, 173 Mo juste après ; 179 Mo en fin de test
+rendus journalisés : 72
 SMOKE OK
-######## durée 13 s
+######## durée 19 s
 
 ######## rechargement à chaud
 OK [état] « Valeur : 3 »
-[A] mode=full verif_ms=2927 extraction_ms=872 build_ms=5652 total_ms=9452 | sauvegarde->rendu_ms=9808 | reloaded model-kept ms=33
+[A] mode=full verif_ms=3759 extraction_ms=732 build_ms=6008 total_ms=10500 | sauvegarde->rendu_ms=10843 | reloaded model-kept ms=45
 OK [A] « Valeur HOT : 3 »
-[B] mode=full verif_ms=3040 extraction_ms=709 build_ms=5545 total_ms=9295 | sauvegarde->rendu_ms=9540 | reloaded model-kept ms=11
+[B] mode=full verif_ms=3614 extraction_ms=857 build_ms=5850 total_ms=10321 | sauvegarde->rendu_ms=10499 | reloaded model-kept ms=13
 OK [B] « Valeur HOT : 10 »
-[C] mode=full verif_ms=2824 extraction_ms=811 build_ms=5501 total_ms=9137 | sauvegarde->rendu_ms=9458 | reloaded model-RESET (champs changés: app_model) ms=11
+[C] mode=full verif_ms=3914 extraction_ms=1014 build_ms=5716 total_ms=10644 | sauvegarde->rendu_ms=10844 | reloaded model-RESET (champs changés: app_model) ms=15
 OK [C] « Valeur HOT : 0 »
 OK [C] modèle réinitialisé : model-RESET (champs changés: app_model)
-[D] mode=lax verif_ms=1398 extraction_ms=759 build_ms=5900 total_ms=8058 | sauvegarde->rendu_ms=8427 | reloaded model-kept ms=11
+[D] mode=lax verif_ms=1362 extraction_ms=752 build_ms=5819 total_ms=7934 | sauvegarde->rendu_ms=8215 | reloaded model-kept ms=16
 OK [D] « Valeur LAX : 1 »
-après D, sans interaction : alc-alive 0/4 vivants=
-déchargement ALC : alc-alive 0/4 vivants= (vivants/remplacés après GC)
-RSS HostDev : 184108 Ko
-OK déchargement : 0 ancien contexte vivant (alc-alive 0/4 vivants=)
+OK [E sélection] « BigList 100000 sel=2 »
+OK [E condensé] « Texte 1 : 832080 »
+OK [E après rechargement : sélection conservée] « BigList 100000 sel=2 »
+OK [E après rechargement : condensé conservé] « Texte 1 : 832080 »
+après D, sans interaction : alc-alive 0/5 vivants=
+déchargement ALC : alc-alive 0/5 vivants= (vivants/remplacés après GC)
+RSS HostDev : 184948 Ko
+OK déchargement : 0 ancien contexte vivant (alc-alive 0/5 vivants=)
 HOTRELOAD OK
-######## durée 68 s
+######## durée 77 s
 
 ######## mutations
 == M1 constante FNV
 F* (preuves complètes) : ACCEPTÉE
 FAIL: fnv = ref
 FAIL: fnv_utf8 = ref
-checks=949803 fails=37972
+checks=950833 fails=39534
 => détectée par les tests
 == M2 borne d'âge 151
 F* (preuves complètes) : REJETÉE
@@ -111,15 +125,62 @@ F* (preuves complètes) : REJETÉE
 en --lax : extraite, tests :
 FAIL: age diff 151
 FAIL: age diff 151
-checks=949803 fails=10
+checks=950833 fails=10
 => détectée aussi par les tests
 == M3 règle printable
 F* (preuves complètes) : ACCEPTÉE
 FAIL: nom C1 0x9F
 FAIL: printable 159
-checks=949803 fails=2
+checks=950833 fails=2
 => détectée par les tests
 MUTATIONS : toutes détectées
-######## durée 50 s
+######## durée 61 s
+
+######## matrice d'extraction F*
+Mx01_Char          OK       
+Mx02_CharU32       EXTRACT  * Error 395:   - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and     has no F# realization. 
+Mx03_CharOfInt     OK       
+Mx04_String        OK       
+Mx05_StringIndex   OK       
+Mx06_List          OK       
+Mx07_ListSort      OK       
+Mx08_Option        OK       
+Mx09_Seq           OK       
+Mx10_Set           OK       
+Mx11_Map           OK       
+Mx12_RBMap         OK       
+Mx13_OrdSet        OK       
+Mx14_UInt64        OK       
+Mx15_Int64         OK       
+Mx16_Cast          OK       
+Mx17_UInt128       OK       
+Mx18_Printf        OK       
+Mx19_PrimsInt      OK       
+Mx20_Bytes         OK       
+Mx21_Ghost         OK       
+Mx22_Poly          OK       
+Mx23_Exn           OK       
+Mx24_Float64       OK       
+Mx25_PrimsIntDivNeg RUN      FAIL 
+Mx26_UnaryMinus    EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+Mx27_PrimsAbs      EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+Mx28_Int32DivNeg   OK       
+
+résumé :       3 EXTRACT      24 OK       1 RUN 
+conforme à docs/matrix/EXPECTED.tsv
+######## durée 55 s
+
+######## reproduction char_code
+cas 1 : u32_of_char tel quel
+  OK Error 395 (char_code) comme documenté
+cas 2 : --custard_extern_type FStar.Char.char_code=uint32
+  OK l'option ne contourne pas l'erreur, comme documenté
+cas 3 : contournement B (assume val + custard_extern)
+  OK extrait, compile, s'exécute
+cas 4 : contournement A (int_of_char)
+  OK extrait, compile, s'exécute
+cas 5 : 0xD7FF est-il un char_code ? (spec : n < 0xd7ff)
+  OK rejeté (0xD7FF exclu par la spec actuelle, probable erreur d'un cran)
+######## durée 14 s
 
 TOUT OK
