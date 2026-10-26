@@ -44,6 +44,7 @@ Avant d'écrire ou de modifier du code qui s'appuie sur F*, Custard, Avalonia ou
   (`HostStatic` bureau, `HostBrowser`, `HostAndroid`, `HostIOS`) sont minces. Un `open Avalonia.Controls` masque les cas `Button`/`Text` de `Node`.
   NativeAOT ne cross-compile pas entre OS : publier en JIT autonome pour les autres RID. L'installeur du SDK Android exige `USER` non vide
   (`XAIAD7009`) et l'acceptation de ses licences (`ACCEPT_ANDROID_LICENSES=1`, décision de l'utilisateur, jamais par défaut).
+- `app/Extracted/{Extracted.fs,FStarCustard.fs,Extracted.fsproj}` sont **générés et non versionnés** (`.gitignore`) : après un clone, lancer `scripts/extract.sh` avant toute compilation ; la CI les produit dans son job `extract` (`docs/CI.md`).
 - Shell : ne pas utiliser `pkill -f <motif>` quand le motif figure dans sa propre ligne de commande (cela tue le shell).
 
 ## 4. Tests : **uniquement du F\***, jamais de F# (décision de l'utilisateur)

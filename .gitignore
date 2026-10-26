@@ -12,3 +12,7 @@ logs/matrix/
 logs/scale/
 shots/*.trace
 logs/loop/
+# générés par scripts/extract.sh (la CI les produit à chaque build, voir docs/CI.md)
+app/Extracted/Extracted.fs
+app/Extracted/FStarCustard.fs
+app/Extracted/Extracted.fsproj

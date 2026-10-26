@@ -26,7 +26,7 @@ Workflow : `.github/workflows/build.yml`. **Il n'a jamais été exécuté** (ce 
 
 ## Économies
 
-- **Aucune installation de F\* ni de Custard** : le F# extrait (`app/Extracted`) est commité. Seul .NET est installé.
+- **Le F# extrait n'est plus commité** (`app/Extracted/*` est dans `.gitignore`) : un job `extract` installe F* (`scripts/setup.sh fstar`, version lue dans `scripts/env.sh`), vérifie `Core`, `Big`, `App` puis extrait (`scripts/extract.sh full`, 22 s à froid ici) **une seule fois** ; les autres jobs téléchargent l'artefact `extracted` (3 fichiers, quelques centaines de Ko). Le code est ainsi identique sur toutes les plateformes, et une erreur de preuve F* arrête toute la construction avant le moindre build de plateforme. Les jobs de plateforme n'installent que .NET. F* (≈ 690 Mo installé) et le cache de vérification sont mis en cache.
 - **Checkout partiel** : `sparse-checkout: app` (≈ 200 Ko au lieu du dépôt entier), `fetch-depth: 1`.
 - **Caches** : paquets NuGet (`~/.nuget/packages`) par cible ; dossier .NET complet **avec ses workloads** (`wasm-tools`, `android`) pour ne pas les retélécharger. Les caches se lisent depuis la branche par défaut : lancer une première fois depuis `main` pour les remplir, avant une étiquette (une étiquette ne remplit pas un cache réutilisable par les suivantes).
 - Un seul runner macOS (facturé ×10 hors dépôt public) pour deux architectures ; l'image Android évite le téléchargement du SDK.
@@ -49,6 +49,7 @@ Il pourrait théoriquement construire le seul WebAssembly (≈ 3 min ici, sous l
 
 ## Limites connues (à confirmer au premier lancement)
 
+- Le binaire F* Linux x86_64 tourne ici (conteneur) ; sur le runner `ubuntu-24.04`, ses dépendances système (non listées par la release) ne sont pas vérifiées.
 - `DOTNET_INSTALL_DIR` (dossier .NET mis en cache) : variable lue par `actions/setup-dotnet` d'après sa documentation ; non vérifiée ici.
 - Android : suppose que l'image `ubuntu-24.04` fournit la plateforme Android et le NDK (r27+) attendus par le workload ; sinon le job échoue (on n'ajoute pas `AcceptAndroidSDKLicenses`, décision de l'utilisateur).
 - iOS : `HostIOS` n'a jamais été compilé ; la version d'Xcode requise par le workload n'a pas pu être lue (aucune source trouvée) ; l'image `macos-26` est un choix à valider.

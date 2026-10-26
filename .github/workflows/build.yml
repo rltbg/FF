@@ -1,6 +1,7 @@
 # Construction multi-plateformes (voir docs/CI.md). Rien ne tourne automatiquement sur un push : déclenchement manuel
-# (Actions > build > Run workflow, avec le choix des cibles) ou étiquette `v*`. Le F# extrait (app/Extracted) est commité :
-# la CI n'installe NI F* NI Custard, seulement .NET, et ne récupère que le dossier app/ (≈ 200 Ko).
+# (Actions > build > Run workflow, avec le choix des cibles) ou étiquette `v*`. Le F# extrait (app/Extracted) n'est PAS commité :
+# le job `extract` vérifie le F* et l'extrait UNE fois, les jobs de plateforme le téléchargent (artefact `extracted`, quelques Ko).
+# Les jobs de plateforme ne récupèrent que app/ (≈ 200 Ko) et installent seulement .NET.
 name: build
 
 on:
@@ -28,14 +29,52 @@ env:
 
 # sur une étiquette `inputs` est vide : chaque job teste donc `event_name != 'workflow_dispatch'` pour tout construire
 jobs:
+  # ---------------------------------------------------------------- F* -> F# : une seule fois pour toutes les plateformes (code identique partout)
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: "app\nfst\nscripts", fetch-depth: 1 }
+      - name: "version de F* (lue dans scripts/env.sh, source unique)"
+        run: grep -m1 '^FSTAR_TAG=' scripts/env.sh >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        id: fstar
+        with:
+          path: .tools/fstar
+          key: fstar-${{ runner.os }}-${{ env.FSTAR_TAG }}
+      - name: "installer F* (téléchargement seulement si absent du cache)"
+        if: steps.fstar.outputs.cache-hit != 'true'
+        run: scripts/setup.sh fstar
+      - uses: actions/cache@v4
+        with:
+          path: fst/_cache
+          key: fstcache-${{ env.FSTAR_TAG }}-${{ hashFiles('fst/*.fst', 'scripts/env.sh') }}
+          restore-keys: fstcache-${{ env.FSTAR_TAG }}-
+      - name: "vérification F* (Core, Big, App) puis extraction Custard"
+        run: scripts/extract.sh full
+      - run: wc -l app/Extracted/*.fs | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extracted
+          path: |
+            app/Extracted/Extracted.fs
+            app/Extracted/FStarCustard.fs
+            app/Extracted/Extracted.fsproj
+          retention-days: 3
+          if-no-files-found: error
+
   # ---------------------------------------------------------------- navigateur : une seule fois (le WebAssembly ne dépend pas de l'architecture)
   wasm:
+    needs: extract
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'wasm') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/download-artifact@v4
+        with: { name: extracted, path: app/Extracted }
       - name: "dossier .NET (mis en cache avec ses workloads)"
         run: echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
       - uses: actions/cache@v4
@@ -63,6 +102,7 @@ jobs:
 
   # ---------------------------------------------------------------- bureau : NativeAOT, un runner natif par OS/architecture
   linux:
+    needs: extract
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'linux') }}
     strategy:
       fail-fast: false
@@ -75,6 +115,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/download-artifact@v4
+        with: { name: extracted, path: app/Extracted }
       - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -94,6 +136,7 @@ jobs:
         with: { name: "${{ matrix.rid }}", path: "out/${{ matrix.rid }}", retention-days: 3, if-no-files-found: error }
 
   windows:
+    needs: extract
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'windows') }}
     strategy:
       fail-fast: false
@@ -106,6 +149,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/download-artifact@v4
+        with: { name: extracted, path: app/Extracted }
       - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -120,12 +165,15 @@ jobs:
   # un seul runner macOS (le plus cher à l'heure, ×10 hors dépôt public) : NativeAOT arm64 natif + x64 par compilation croisée
   # entre architectures du même OS (permise, contrairement au croisé entre OS)
   macos:
+    needs: extract
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'macos') }}
     runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/download-artifact@v4
+        with: { name: extracted, path: app/Extracted }
       - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -142,12 +190,15 @@ jobs:
 
   # ---------------------------------------------------------------- mobile
   android:
+    needs: extract
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'android') }}
     runs-on: ubuntu-24.04   # SDK + NDK Android et JDK 17 déjà dans l'image : rien à télécharger
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/download-artifact@v4
+        with: { name: extracted, path: app/Extracted }
       - name: "dossier .NET (mis en cache avec le workload android)"
         run: echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
       - uses: actions/cache@v4
@@ -178,12 +229,15 @@ jobs:
         with: { name: android, path: apk, retention-days: 3, if-no-files-found: error }
 
   ios:
+    needs: extract
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'ios') }}
     runs-on: macos-26   # le workload ios de .NET 10 exige un Xcode récent (voir le message du workload si le build échoue)
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/download-artifact@v4
+        with: { name: extracted, path: app/Extracted }
       - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages

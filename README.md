@@ -15,7 +15,7 @@ Versions : F* 2026.10.25 · .NET SDK 10.0.403 · Avalonia 12.1.4 · FSharp.Core 
 | `fst/Core.fst` | FNV-1a 32 bits (spec liste + implémentation `byte[]` prouvée égale, empreinte UTF-8), analyse décimale bornée (correction fonctionnelle prouvée), validation de nom |
 | `fst/Big.fst` | Données volumineuses **générées par F\*** à la demande (100 000 lignes, texte de 1 Mo) et leurs réciproques prouvées |
 | `fst/App.fst` | Modèle, messages, `update` avec invariant prouvé, `view` → arbre de vue, `show_model` (journal de test), `preload_msgs` |
-| `app/Extracted/` | F# extrait tel quel + bibliothèque Custard générée (régénérés par `scripts/extract.sh`) |
+| `app/Extracted/` | F# extrait tel quel + bibliothèque Custard générée (**non versionnés** : produits par `scripts/extract.sh`, et par le job `extract` de la CI) |
 | `app/Ui/` | Interpréteur réconciliant `Node` → contrôles Avalonia, boucle MVU, cycle de vie multi-plateforme (Avalonia noyau seul) |
 | `app/Shell/`, `app/UiDesktop/` | Colle commune à toutes les têtes ; démarrage bureau (`UsePlatformDetect`) |
 | `app/HostStatic/`, `HostBrowser/`, `HostAndroid/`, `HostIOS/` | Têtes : **bureau** (Windows, macOS, Linux ; JIT/NativeAOT), **navigateur** (WebAssembly), **Android**, **iOS** (écrite, non compilable sous Linux) |
