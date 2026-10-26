@@ -1,4 +1,4 @@
-# Rapport (2e passe) : boucle F* → F# → Avalonia, revue contre les documentations
+# Rapport (3e passe : tests entièrement en F*) : boucle F* → F# → Avalonia, revue contre les documentations
 
 **Verdict : boucle viable avec contournements mineurs.**
 - La logique applicative entière est écrite et prouvée en F*. Elle s'extrait en F# sans retouche et tourne à l'identique en JIT et en NativeAOT.
@@ -13,7 +13,9 @@ Versions : F* 2026.10.25 (commit 362e792), .NET SDK 10.0.403 (dotnet-install.sh,
 FSharp.Core 10.1.403. Environnement : conteneur Linux x86_64, 4 vCPU, sans GPU, Xvfb.
 1re passe : commit `1a45fba` (rapport et code d'origine).
 
-Cette passe est partie d'une remise à zéro complète :
+3e passe : `scripts/all.sh` depuis zéro → `TOUT OK` en 20 min 49 s (`logs/all.log`), avec 13 étapes dont les tests F*, les tests amont et le balayage d'ulib.
+
+Cette passe (2e) est partie d'une remise à zéro complète :
 - espace de travail, caches NuGet et outils supprimés ;
 - réinstallation par `scripts/setup.sh` ;
 - relecture de chaque implémentation contre sa documentation ;
@@ -57,28 +59,22 @@ Puis extension de la passe (étapes laissées « non testées » dans la version
 
 ## 3. Tests (`logs/all.log`, `logs/mutations.log`)
 
-- **Suite :** 950 851 vérifications, **0 échec en JIT et en AOT**. Elle couvre : vecteurs FNV du draft ; équivalence entre implémentation tableau et spec liste ; `fnv_append` ; `fnv_utf8` contre `Encoding.UTF8` ; analyse décimale (cas limites et différentiel) ; `printable` exhaustif ; invariant de `update` recalculé indépendamment ; tous les lemmes d'application ; garde de débordement des identifiants (`next_id` = 0xFFFFFFFD accepté, 0xFFFFFFFE refusé) ; totalité de `view` ; sélection `Select` (0, 99 999 acceptés ; 100 000 et 4 294 967 295 refusés) ; `HashText` (4 000 000 unités acceptées, 4 000 001 refusées, texte de 1 Mo comparé à une référence indépendante).
-- **Mutations** (`scripts/mutate.sh`, toutes détectées) :
-
-| Mutation | Preuves F* | Tests |
-|---|---|---|
-| M1 : prime FNV 0x01000193 → 0x01000192 | acceptée (aucune preuve ne fixe la constante) | 39 534 échecs |
-| M2 : borne d'âge 150 → 151 | **rejetée** (`Failed to prove: FStar.UInt32.v n <= 150`) | en `--lax` : 10 échecs |
-| M3 : règle C1 159 → 158 | acceptée | 2 échecs (test exhaustif) |
-
+- **Suite (3e passe, entièrement en F\*) :** 1 490 342 vérifications, **0 échec en JIT et en AOT** (`scripts/ftests.sh`) : Core (FNV, analyse décimale, `printable` exhaustif), Big (100 000 lignes et 38 000 lignes réciproques, exhaustif), App (marches aléatoires avec invariant recalculé, effets message par message, `show_model`), entiers machine (202 055 cas, 58 casts), `List`/`String`/`Char`/`Bytes`/`IO`/`Float`, 100 cas d'ulib à double oracle. Détail : `docs/ULIB-COUVERTURE.md`. Les anciens tests F# (`app/Tests`, 950 851 vérifications) sont supprimés ; leur contenu est porté en F*.
+- **Mutations** (`scripts/mutate.sh`) : 13 sur 13 détectées (constantes FNV, bornes, règle `printable`, chiffres et modulo de `Big`, `row_index` sans borne, saturation, `Select`, longueur du condensé, brouillon non vidé, `Reset`). Les propriétés prouvées sont rejetées par F* (M3, M5, M8, M9, M10, M11) ; les autres sont attrapées par les tests. Un échec d'infrastructure des tests n'est plus compté comme détection.
+- **Tests amont de F\*** via le backend F# : 33 OK, 3 EXTRACT attendus (`TestChar`, `TestPrint`, `TestShift`). **Matrice** : 46 cas conformes à `EXPECTED.tsv`. **Balayage d'ulib** : 221 modules, 61 OK / 69 vides / 84 EXTRACT / 7 BUILD ; 264 des 537 définitions exécutables des modules OK sont atteintes (mesure d'atteignabilité, limites dans `docs/COUVERTURE-ULIB.md`).
 - **GUI** (`scripts/ui_smoke.sh`, oracles sur l'état du modèle) : OK en AOT et en JIT, en rendu par défaut et en logiciel forcé. 10 runs consécutifs OK. La fenêtre X11 appartient au processus (`_NET_WM_PID`). Le parcours valide : compteur = 2, ajout de deux éléments, refus d'un nom de 25 caractères, cocher, supprimer les cochés, formulaire accepté avec l'empreinte 4267605246 (= FNV-1a de l'UTF-8 de « Ada Lovelace »), rejet de l'âge 200. Le parcours inclut maintenant l'onglet **Volumes** : sélection d'une ligne, défilement jusqu'à la ligne 99 999, hachage du texte de 1 Mo par F* (`digest=1,832080,1791175457`, égal à la référence Python). Captures : `shots/smoke/`.
 
 ## 4. Part de F*
 
-| Source | Lignes utiles |
+| Source | Lignes utiles (`scripts/loc.sh`) |
 |---|---|
-| F* (Core 99 + App 206) | **305**, dont ≈ 90 de lemmes et ≈ 4 de spec non extraite |
-| F# à la main livré (Ui 232 + HostStatic 49, dont ≈ 20 lignes de journal de test) | **281** |
-| F# à la main, dev seulement (HostDev) | 165 |
-| Tests | 248 |
-| F# extrait (+ bibliothèque Custard générée) | 366 (+ 228) |
+| F* (Core 99 + Big 41 + App 229) | **369** |
+| F# à la main livré (Ui 236 + HostStatic 37) | **273** |
+| F# à la main, dev seulement (HostDev) | 169 |
+| Tests : F* à la main / F* généré / cas de matrice | 1 032 / 770 / 394 ; **0 ligne de F#** |
+| F# extrait (+ bibliothèque Custard générée) | 436 (+ 228) |
 
-Toute la logique applicative est en F*. Le F# écrit à la main est un interpréteur générique, l'affichage des gros volumes et une colle de 12 lignes. En lignes, F* représente 52 % du code livré écrit à la main (305 sur 586).
+Toute la logique applicative est en F*. Le F# écrit à la main est un interpréteur générique, l'affichage des gros volumes et une colle de 12 lignes. En lignes, F* représente 57 % du code livré écrit à la main (369 sur 642). Migrés vers F* lors de cette passe : génération et réciproques des données volumineuses, journal de test, préchargement.
 
 **21 lemmes :**
 - Core : `fnv_append`, `lemma_fnv_bytes`, `lemma_dec_mono`, `lemma_parse_digits`, `lemma_parse_nat`, `lemma_parse_bounded`, `lemma_empty_rejected`, `lemma_name_len`, `lemma_len_maxlen`, `lemma_name_ok_maxlen` ;
@@ -160,26 +156,27 @@ Les résultats de calcul sont identiques en JIT et en AOT.
 
 ## 7. Gros volumes
 
-Conception : les données restent **côté hôte** ; le modèle F* ne garde que `sel : option U32.t` (< 100 000, prouvé) et `digest` (longueur, FNV-1a). Détail et alternatives : `docs/GUIDE.md` §7.
+Conception : les données ne sont **jamais stockées** : F* les génère à la demande (`Big.row`, `Big.line`) et l'hôte ne demande que les lignes affichées ; le modèle F* ne garde que `sel : option U32.t` (< 100 000, prouvé) et `digest` (longueur, FNV-1a). Détail et alternatives : `docs/GUIDE.md` §7.
 
 | Mesure | Résultat |
 |---|---|
-| 100 000 éléments **dans le modèle F\*** (`Tests bench`) | construction 238 à 346 ms, 10,8 Mo, `Toggle` 7 à 17 ms, `view` 75 à 81 ms pour 200 008 nœuds : impraticable à afficher sans virtualisation |
+| 100 000 éléments **dans le modèle F\*** (`scripts/bench_model.sh`, programmes F*, processus entiers démarrage compris) | construction ≈ 430–450 ms (JIT) / 280–300 ms (AOT) ; + 20 `Toggle` ≈ 16–24 ms chacun ; + 5 `view` ≈ 100 ms chacun (JIT) : impraticable à afficher sans virtualisation. (1re passe, banc F# aujourd'hui supprimé : 238–346 ms, `Toggle` 7–17 ms, `view` 75–81 ms) |
 | Liste de 100 000 lignes **virtualisée** (`BigList`) | +0 Mo de RSS ; défilement jusqu'à la ligne 99 999 ; sélection par F* |
 | `TextBox` avec le texte de 1 Mo | **+170 Mo** de RSS (330 Mo contre 160 Mo) : abandonné |
 | Visualiseur de lignes virtualisé pour le texte | +6 Mo de RSS (AOT) |
 | Hachage du texte de 1 022 080 octets par la fonction F* prouvée | 3,0 à 3,6 ms ; résultat égal à une référence Python (832 080 caractères, FNV-1a 1791175457) |
 | Liste **non virtualisée** (un contrôle par élément), `scripts/list_scale.sh` | 1 000 éléments : interface occupée 1,7 s (AOT) / 4,9 s (JIT) ; 5 000 : 6,2 s / 8,2 s et 0,9 à 1 Go de RSS ; clic ensuite en ≈ 115 ms |
 
-## 8. Matrice d'extraction F* et défauts de F*
+## 8. Matrice d'extraction F*, tests amont, ulib : défauts constatés
 
-28 cas (`docs/matrix/`, `scripts/matrix.sh`) : **24 OK, 3 échecs d'extraction, 1 divergence à l'exécution** ; résultats détaillés dans `docs/MATRICE-FSTAR.md`. Passage à l'échelle (`scripts/scale.sh`) : `Seq` = liste F# (index O(n)), `Map`/`Set` = chaînes de fermetures, `Set` déborde la pile entre 10⁵ et 10⁶ éléments.
+46 cas (`docs/matrix/`, `scripts/matrix.sh`) : **25 OK, 6 échecs d'extraction, 1 de compilation, 13 divergences ou plantages à l'exécution**, tous attendus (`EXPECTED.tsv`). Passage à l'échelle (`scripts/scale.sh`) : `Seq` = liste F# (index O(n)), `Map`/`Set` = chaînes de fermetures, `Set` déborde la pile entre 10⁵ et 10⁶ éléments.
 
-Défauts de F* constatés, avec reproduction et correctif proposé (**non déposés**, `docs/UPSTREAM-FSTAR.md`) :
-1. **`/` et `%` de `Prims.int` : F* est euclidien, le F# extrait tronque vers zéro** (F* prouve `(-7)/2 = -4`, le F# calcule `-3`) : un fait prouvé est faux à l'exécution pour des opérandes négatifs. Les entiers machine ne sont pas concernés.
-2. `FStar.Char.u32_of_char` : `Error 395` (`docs/FSTAR-char_code.md`).
-3. Négation unaire d'un `int` non constant et `Prims.abs` : `Error 395 Prims.op_Tilde_Minus`.
-4. Borne de `char_code` : `0xD7FF` exclu ; 5. `char_of_u32` tronque au-delà de `0xFFFF` ; 6. documentation (28 tests F# et non 24) et suite F# qui n'exerce pas `Char`.
+14 défauts, avec reproduction et correctif proposé (**non déposés**, `docs/UPSTREAM-FSTAR.md`). Les plus graves, ceux où un fait **prouvé en F\*** est faux à l'exécution :
+1. `/` et `%` de `Prims.int` euclidiens dans F*, tronqués en F# ; conséquence dans ulib : `FStar.UInt.sub_mod`/`decr_mod` renvoient un négatif.
+2. `List.Tot.splitAt` (totale en F*) lève ; `bool_of_compare` et `compare_of_bool` ont leurs signes inversés ; `String.lowercase/uppercase` Unicode contre ASCII ; `split ""`.
+3. Plantages : `Class.Printable.to_string` d'une liste = **boucle infinie** ; `Printf.sprintf` avec un entier machine = `failwith "Prims.admit"`.
+4. Non réalisés (`Error 395`) : `char_code`, négation unaire, `either`, `Float.bit_eq/to_string`, `to_string_hex(_pad)`, `Int128.to_string/rotate_*` ; F# non compilable : `list_refb`, paramètre de type fantôme.
+5. Défaut d'ulib seul : `FStar.RBMap.for_any`.
 
 ## 9. Contournements restants
 

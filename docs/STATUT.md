@@ -9,15 +9,15 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 |---|---|---|
 | Preuves F* | invariant de `update` (compteur, ids, sélection < 100 000, pas de débordement u32), correction fonctionnelle de `parse_nat`, équivalence `fnv_bytes` = spécification, condensé exact du texte haché, 21 lemmes | `fst/` |
 | Extraction | `Core.fst` et `App.fst` extraits tels quels, 0 warning ; 1 seul contournement F* (`u32_of_char`) | `scripts/extract.sh` |
-| Tests exécutables | 950 851 vérifications, 0 échec, en JIT et en NativeAOT | `scripts/test.sh` |
-| Mutations | 3 mutations toutes détectées (une par F*, deux par les tests) | `scripts/mutate.sh` |
+| Tests exécutables | **1 490 342 vérifications écrites en F\***, 0 échec, en JIT et en NativeAOT ; 171/187 réalisations Custard exercées | `scripts/test.sh`, `docs/ULIB-COUVERTURE.md` |
+| Mutations | 13 mutations toutes détectées (5 par F*, les autres par les tests) | `scripts/mutate.sh` |
 | Interface | 3 onglets + Volumes, pilotés par xdotool, **état du modèle vérifié à chaque étape**, AOT et JIT | `scripts/ui_smoke.sh` |
 | Rechargement à chaud | 5 scénarios (vue, logique, type du modèle, mode sans preuves, onglet Volumes) ; déchargement de **tous** les contextes | `scripts/hotreload.sh` |
 | NativeAOT | publication, 0 warning sauf `IL3053`/`IL2104` de FSharp.Core, démarrage, RSS, taille | `scripts/build.sh`, `scripts/startup.sh` |
 | Modes sans preuves | `--lax` et `--admit_smt_queries true` testés (`logs/loop_bench.log`) : vérification de 1,0 à 1,8 s au lieu de 2,7 à 4,9 s ; la compilation F# (≈ 5 s) domine la boucle dans les trois modes | `scripts/loop.sh`, `scripts/loop_bench.sh` |
 | Gros volumes | liste de 100 000 lignes virtualisée (côté hôte), texte de 1 022 080 octets haché par la fonction F* prouvée, coût mesuré du modèle F* à 100 000 éléments | `docs/GUIDE.md` §7 |
-| Sous-ensemble F* extractible | 28 cas (chaînes, listes, Seq/Map/Set, entiers machine, Bytes, Printf, Float64…), passage à l'échelle | `docs/MATRICE-FSTAR.md` |
-| Défauts de F* documentés | 6 constats avec reproduction et correctif proposé | `docs/UPSTREAM-FSTAR.md` |
+| Sous-ensemble F* extractible | 46 cas (matrice : 25 OK, 6 EXTRACT, 1 BUILD, 13 RUN attendus) ; tests amont : 33 OK, 3 EXTRACT ; balayage d'ulib : 61 OK, 69 vides, 84 EXTRACT, 7 BUILD (chaînes, listes, Seq/Map/Set, entiers machine, Bytes, Printf, Float64…), passage à l'échelle | `docs/MATRICE-FSTAR.md` |
+| Défauts de F* documentés | 14 constats avec reproduction et correctif proposé | `docs/UPSTREAM-FSTAR.md` |
 | Défaut d'Avalonia | cause trouvée dans le code source, contournement en place, note pour le remonter | `REPORT.md` §5, `docs/TODO-avalonia-upstream.md` |
 
 ## Mesuré mais limité (comportement connu, pas un défaut du banc)
@@ -53,6 +53,10 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 | **Intégration continue** | décision de l'utilisateur : **pas de GitHub Actions**. `scripts/all.sh` est la passe complète, exécutable par n'importe quel outil si besoin |
 | `make fsharp-test` du dépôt F* | demande de reconstruire F* ; non lancé |
 
+## Part de F* (`scripts/loc.sh`)
+F* livré 369 lignes (Core 99, Big 41, App 229) contre 273 de F# à la main livré (Ui 236, HostStatic 37) : **57 %** ; HostDev 169 (dev seulement). Tests : 0 ligne de F#.
+Reste en F# : interprétation des nœuds en contrôles Avalonia et réconciliation par position, boucle MVU, `LazyRows` (plomberie `IList`), colle `toNode`, rechargement à chaud par réflexion. Les tests unitaires de `LazyRows` (F#) ont disparu : l'`IList` n'est couverte que par le smoke GUI (défilement, sélection) ; la logique (contenu, réciproque) est testée exhaustivement en F* (`TBig`).
+
 ## Pour reprendre
-1. `scripts/setup.sh` puis `scripts/all.sh` (≈ 7 min) : tout doit être vert.
+1. `scripts/setup.sh` puis `scripts/all.sh` (≈ 21 min) : tout doit être vert.
 2. Lire `docs/GUIDE.md` (architecture et règles) puis choisir dans « Pas fait, faisable ici ».
