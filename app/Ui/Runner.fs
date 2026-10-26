@@ -23,6 +23,12 @@ type Runner(initial: CoreApi, window: Window) as this =
   let mutable api = initial
   let mutable model = initial.Init
   let holder = ScrollViewer()
+  /// Panneau STABLE placé une fois pour toutes dans le ScrollViewer. Avalonia 12.1.4 : ScrollContentPresenter
+  /// mémorise le contenu présent au premier Measure (`_scrollSnapPointsInfo`, drapeau `_isSnapPointsUpdated`
+  /// à usage unique) et ne le rafraîchit jamais quand le contenu est remplacé : remplacer le contenu du
+  /// ScrollViewer retiendrait donc la première racine (et, via Control.Tag, les msg de l'ancien assembly,
+  /// ce qui empêchait le déchargement du premier AssemblyLoadContext). On ne remplace que l'enfant de ce panneau.
+  let host = StackPanel(Margin = Thickness 16.0)
   let mutable renders = 0
   let interp =
     Interp((fun msg -> this.Dispatch msg),
@@ -30,13 +36,15 @@ type Runner(initial: CoreApi, window: Window) as this =
 
   let render () =
     let root = interp.Render(api.View model)
-    if not (obj.ReferenceEquals(holder.Content, root)) then
-      root.Margin <- Thickness 16.0
-      holder.Content <- root
+    if host.Children.Count <> 1 || not (obj.ReferenceEquals(host.Children.[0], root)) then
+      host.Children.Clear()
+      host.Children.Add root
     renders <- renders + 1
     this.OnRender model
 
-  do window.Content <- holder
+  do
+    holder.Content <- host
+    window.Content <- holder
 
   /// Appelé après chaque rendu avec le modèle (journal de test).
   member val OnRender : obj -> unit = ignore with get, set

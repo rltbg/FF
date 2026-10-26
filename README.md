@@ -19,6 +19,7 @@ Versions : F* 2026.10.25 · .NET SDK 10.0.403 · Avalonia 12.1.4 · FSharp.Core 
 | `app/HostStatic/` | Hôte lié statiquement au cœur (JIT et NativeAOT) |
 | `app/HostDev/` | Hôte de dev : recharge `Extracted.dll` à chaud, transfère le modèle, mesure le déchargement |
 | `app/Tests/` | 949 803 vérifications (JIT et AOT) ; `Tests bench` pour les micro-mesures |
+| `tools/dumpscan/` | Analyseur ClrMD de dumps : qui retient un `AssemblyLoadContext` collectible (a servi à trouver la fuite du premier contexte, voir REPORT §5) |
 | `scripts/` | Voir ci-dessous |
 | `logs/`, `shots/` | Journaux bruts et captures de la dernière exécution |
 

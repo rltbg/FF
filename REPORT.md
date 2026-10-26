@@ -29,7 +29,7 @@ Cette passe est partie d'une remise à zéro complète :
 | 8 | `X11RenderingMode.Software` forcé seul | doc `X11PlatformOptions.RenderingMode` : ajouter `Software` comme **repli** | Modes par défaut de la plateforme ; `MVU_SOFTWARE_RENDERING=1` pour forcer | GUI OK dans les deux modes |
 | 9 | `UseX11().UseSkia().UseHarfBuzz()` écrit à la main | doc Avalonia 12 (breaking changes) : HarfBuzz est inclus avec `UsePlatformDetect` | `UsePlatformDetect()`, compatible AOT | GUI AOT OK |
 | 10 | Analyseurs AOT inactifs sur les bibliothèques | doc Avalonia Native AOT : `IsAotCompatible` sur toutes les bibliothèques | `app/Directory.Build.props`, qui s'applique aussi au projet généré par F* | 0 warning sur nos assemblies |
-| 11 | `HostDev` : les TextBox gardaient les tags de l'ancien assembly et empêchaient le déchargement | doc .NET « unloadability » : déchargement coopératif | `Interp.Reset()` au remplacement du cœur ; mesure par `WeakReference` | voir §5 |
+| 11 | `HostDev` : le premier contexte chargé ne se déchargeait jamais | doc .NET « unloadability » ; **code source Avalonia 12.1.4** (`ScrollContentPresenter`) | racine **stable** dans le `ScrollViewer` : on ne remplace que son enfant (cause racine : §5, « Fuite du premier contexte ») ; `Interp.Reset()` au remplacement du cœur | dump ClrMD avant/après, `hotreload.sh` (assertion) |
 | 12 | `HostDev` : transfert de modèle sans contrôle des types primitifs, et exceptions autres que `TransplantFailed` non rattrapées | — | Contrôle de type strict et capture générique, qui mène à une réinitialisation | scénario C |
 | 13 | Scripts avec chemins absolus de la machine d'essai | — | `scripts/` relatifs au dépôt, outils dans `.tools/` | `all.sh` depuis zéro |
 | 14 | Mesure « `fnv` 10 fois plus lent en JIT » | — | Échauffement insuffisant : avec un échauffement correct, la liste donne 0,091 µs en JIT comme en AOT | `logs/bench_sizes.log` |
@@ -67,12 +67,12 @@ Cette passe est partie d'une remise à zéro complète :
 | Source | Lignes utiles |
 |---|---|
 | F* (Core 96 + App 157) | **253**, dont ≈ 74 de lemmes et ≈ 15 de spec non extraite |
-| F# à la main livré (Ui 158 + HostStatic 37, dont 12 lignes de journal de test) | **195** |
+| F# à la main livré (Ui 161 + HostStatic 37, dont 12 lignes de journal de test) | **198** |
 | F# à la main, dev seulement (HostDev) | 157 |
 | Tests | 193 |
 | F# extrait (+ bibliothèque Custard générée) | 279 (+ 228) |
 
-Toute la logique applicative est en F*. Le F# écrit à la main est un interpréteur générique et une colle de 10 lignes. En lignes, F* représente 56 % du code livré écrit à la main.
+Toute la logique applicative est en F*. Le F# écrit à la main est un interpréteur générique et une colle de 10 lignes. En lignes, F* représente 56 % du code livré écrit à la main (253 sur 451).
 
 **17 lemmes :**
 - Core : `fnv_append`, `lemma_fnv_bytes`, `lemma_dec_mono`, `lemma_parse_digits`, `lemma_parse_nat`, `lemma_parse_bounded`, `lemma_empty_rejected`, `lemma_name_len`, `lemma_name_ok_maxlen` ;
@@ -99,12 +99,19 @@ La compilation F# (≈ 5 s) domine. Les preuves renforcées coûtent environ 1 s
 
 | Scénario | Sauvegarde → rendu | Rechargement | Résultat |
 |---|---|---|---|
-| A : texte de vue | 10,0 s | 33 ms | état conservé (`Valeur HOT : 3`) |
-| B : logique de `update` (Reset → 10) | 8,7 s | 12 ms | appliquée sans redémarrage |
-| C : champ ajouté au modèle | 9,5 s | 12 ms | `model-RESET (champs changés: app_model)` ; **changement de type = état réinitialisé** |
-| D : texte de vue, `--lax` | 7,9 s | 10 ms | OK |
+| A : texte de vue | 9,8 s | 33 ms | état conservé (`Valeur HOT : 3`) |
+| B : logique de `update` (Reset → 10) | 9,5 s | 11 ms | appliquée sans redémarrage |
+| C : champ ajouté au modèle | 9,5 s | 11 ms | `model-RESET (champs changés: app_model)` ; **changement de type = état réinitialisé** |
+| D : texte de vue, `--lax` | 8,4 s | 11 ms | OK |
 
-**Déchargement des contextes**, mesuré par `WeakReference` après GC : tous les contextes remplacés se déchargent, **sauf le premier contexte effectivement utilisé** par l'UI. `gcroot` (dotnet-dump) ne lui trouve aucune racine managée externe, seulement la poignée forte que le runtime tient pendant un déchargement. Un contexte témoin chargé puis déchargé sans être utilisé se décharge bien. La rétention est bornée à un assembly et ne grandit pas. **Cause non élucidée.**
+**Fuite du premier contexte : cause trouvée et corrigée.** Dans la passe précédente, le premier contexte remplacé ne se déchargeait jamais (`1/N vivants=0`), les suivants si. Analyse :
+- `gcroot` (dotnet-dump) ne trouvait aucune racine managée : il ne montre que les poignées internes du runtime. J'ai donc écrit un analyseur ClrMD (non versionné) qui calcule les objets vivants depuis les vraies racines (pile, poignées fortes, statiques) puis cherche qui référence le `LoaderAllocator` fuyant.
+- Résultat : 6 `Avalonia.Controls.Button` vivants, via `EffectiveValue<object>` (la propriété `Tag`, qui contient les `msg` de l'ancien assembly). Chemin depuis la racine : `Interp` → nouvelle racine → `ScrollContentPresenter` → champ **`_scrollSnapPointsInfo`** = **ancienne racine** (`StackPanel`) → ses `Button`.
+- Source Avalonia 12.1.4 : `ScrollContentPresenter.MeasureOverride` exécute `UpdateSnapPoints()` **une seule fois** (drapeau `_isSnapPointsUpdated`), qui mémorise le contenu d'alors dans `_scrollSnapPointsInfo` et s'abonne à ses événements. `ChildChanged` ne le rafraîchit jamais. Remplacer le contenu du `ScrollViewer` retient donc la **première** racine pour toute la vie du presenter. C'est un défaut d'Avalonia ; je n'ai pas cherché de ticket amont.
+- Pourquoi seulement le premier : le champ est écrit au premier `Measure`, avec la première racine, et plus jamais ensuite.
+- Hypothèses écartées par mesure : réflexion F# et transfert de modèle (dépôt console : 5 contextes chaînés, tous déchargés), nombre d'appels `MethodInfo.Invoke` (jusqu'à 200), tiering et PGO du JIT (désactivés : rien ne change), création de la fenêtre dans `Opened` ou différée, journal de rendu, détachement explicite du contenu.
+- **Correctif** (`Ui/Runner.fs`) : un `StackPanel` hôte stable est placé une fois dans le `ScrollViewer` ; on ne remplace que son enfant. Le presenter ne voit jamais de nouveau contenu, donc `_scrollSnapPointsInfo` désigne l'hôte, qui ne retient rien de l'ancien assembly.
+- **Vérification :** `0/1`, `0/2`, `0/3` dans le journal (au lieu de `1/N`). Dump ClrMD après deux rechargements : 1 seul `LoaderAllocator` et 1 seul `Extracted.dll` chargé (contre 2 et 2 avant). `scripts/hotreload.sh` contient maintenant une assertion (0 ancien contexte vivant) ; **sans le correctif elle échoue** (`KO déchargement : alc-alive 1/4 vivants=0`), avec elle passe (`0/4`).
 
 **`dotnet watch`** (`logs/watch_check*.log`) :
 - `Restart is needed to apply the changes.`, sur le F# extrait comme sur le F# écrit à la main ; état perdu ; 5,6 à 7,5 s.
@@ -152,7 +159,6 @@ Les résultats de calcul sont identiques en JIT et en AOT.
 
 - Interpréteur réconciliant par **position** : pas de clés. Une liste dont on retire un élément réutilise les contrôles suivants, avec leurs propriétés mises à jour. C'est correct, mais pas optimal.
 - Non testés : liste de 100 000 lignes, texte de 1 Mo, `Seq`/`Map`/`Set` d'F*, Windows et macOS, GPU réel.
-- Retenue bornée d'un contexte dans l'hôte de dev, non élucidée (§5).
 - Les preuves ne fixent ni les constantes FNV ni la règle des caractères : ce sont les tests qui les gardent (M1, M3).
 - `custard.md` se décrit comme « design sketch ». `make fsharp-test` du dépôt F* n'a pas été lancé.
 

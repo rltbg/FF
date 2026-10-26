@@ -44,5 +44,10 @@ sleep 2.5; echo "après D, sans interaction : $(grep alc-alive "$LOG" | tail -1 
 xdotool mousemove 400 450 click 1; sleep 0.3; xdotool mousemove 450 500; sleep 4.5
 echo "déchargement ALC : $(grep alc-alive "$LOG" | tail -1 | cut -d' ' -f2-) (vivants/remplacés après GC)"
 echo "RSS HostDev : $(awk '/VmRSS/{print $2}' /proc/$P/status) Ko"
+# non-régression : après 3 rechargements tous les contextes remplacés doivent être déchargés
+# (Avalonia 12.1.4 retenait la 1re racine du ScrollViewer ; voir Ui/Runner.fs)
+last=$(grep alc-alive "$LOG" | tail -1)
+alive=$(echo "$last" | sed -n 's/.* \([0-9]*\)\/[0-9]* vivants=.*/\1/p')
+if [ "$alive" = "0" ]; then echo "OK déchargement : 0 ancien contexte vivant (${last#* })"; else echo "KO déchargement : ${last#* }"; fail=1; fi
 kill $P; wait $P 2>/dev/null
 [ $fail -eq 0 ] && echo "HOTRELOAD OK" || { echo "HOTRELOAD KO"; exit 1; }

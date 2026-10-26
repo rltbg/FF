@@ -6,3 +6,5 @@ pub/
 *.checked
 .tools/
 out/
+/tools/*/bin/
+/tools/*/obj/

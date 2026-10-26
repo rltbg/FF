@@ -11,7 +11,7 @@ Verified module: App
 All verification conditions discharged successfully
 Verified module: App
 All verification conditions discharged successfully
-######## durée 5 s
+######## durée 6 s
 
 ######## compilation + NativeAOT
 
@@ -19,19 +19,19 @@ Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:09.92
+Time Elapsed 00:00:11.73
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:05.50
+Time Elapsed 00:00:06.52
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:04.78
+Time Elapsed 00:00:04.68
   Ui -> /home/user/ff/app/Ui/bin/Release/net10.0/Ui.dll
   Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
   HostStatic -> /home/user/ff/app/HostStatic/bin/Release/net10.0/linux-x64/HostStatic.dll
@@ -43,7 +43,7 @@ Time Elapsed 00:00:04.78
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/Tests/Tests.fsproj]
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/Tests/Tests.fsproj]
   Tests -> /home/user/ff/out/Tests/
-######## durée 98 s
+######## durée 104 s
 
 ######## tests JIT + AOT
 JIT: checks=949803 fails=0
@@ -51,7 +51,7 @@ AOT: checks=949803 fails=0
 ######## durée 1 s
 
 ######## GUI AOT
-OK fenêtre _NET_WM_PID=15303 = PID 15303
+OK fenêtre _NET_WM_PID=22448 = PID 22448
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
@@ -59,39 +59,40 @@ OK [cocher] items=poires[x],pommes[ ]
 OK [supprimer] items=pommes[ ] 
 OK [accepte] status=accepted:Ada Lovelace,36,4267605246
 OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
-rendus journalisés : 68 ; RSS : 116236 Ko
-SMOKE OK
-######## durée 13 s
-
-######## GUI JIT
-OK fenêtre _NET_WM_PID=15474 = PID 15474
-OK [compteur] counter=2
-OK [onglet] tab=items
-OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
-OK [cocher] items=poires[x],pommes[ ]
-OK [supprimer] items=pommes[ ] 
-OK [accepte] status=accepted:Ada Lovelace,36,4267605246
-OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
-rendus journalisés : 68 ; RSS : 176524 Ko
+rendus journalisés : 68 ; RSS : 122680 Ko
 SMOKE OK
 ######## durée 14 s
 
+######## GUI JIT
+OK fenêtre _NET_WM_PID=22621 = PID 22621
+OK [compteur] counter=2
+OK [onglet] tab=items
+OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
+OK [cocher] items=poires[x],pommes[ ]
+OK [supprimer] items=pommes[ ] 
+OK [accepte] status=accepted:Ada Lovelace,36,4267605246
+OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
+rendus journalisés : 68 ; RSS : 183172 Ko
+SMOKE OK
+######## durée 13 s
+
 ######## rechargement à chaud
 OK [état] « Valeur : 3 »
-[A] mode=full verif_ms=2946 extraction_ms=1053 build_ms=5791 total_ms=9791 | sauvegarde->rendu_ms=10017 | reloaded model-kept ms=33
+[A] mode=full verif_ms=2927 extraction_ms=872 build_ms=5652 total_ms=9452 | sauvegarde->rendu_ms=9808 | reloaded model-kept ms=33
 OK [A] « Valeur HOT : 3 »
-[B] mode=full verif_ms=2908 extraction_ms=739 build_ms=4825 total_ms=8474 | sauvegarde->rendu_ms=8720 | reloaded model-kept ms=12
+[B] mode=full verif_ms=3040 extraction_ms=709 build_ms=5545 total_ms=9295 | sauvegarde->rendu_ms=9540 | reloaded model-kept ms=11
 OK [B] « Valeur HOT : 10 »
-[C] mode=full verif_ms=2974 extraction_ms=852 build_ms=5348 total_ms=9175 | sauvegarde->rendu_ms=9464 | reloaded model-RESET (champs changés: app_model) ms=12
+[C] mode=full verif_ms=2824 extraction_ms=811 build_ms=5501 total_ms=9137 | sauvegarde->rendu_ms=9458 | reloaded model-RESET (champs changés: app_model) ms=11
 OK [C] « Valeur HOT : 0 »
 OK [C] modèle réinitialisé : model-RESET (champs changés: app_model)
-[D] mode=lax verif_ms=1439 extraction_ms=969 build_ms=5129 total_ms=7539 | sauvegarde->rendu_ms=7850 | reloaded model-kept ms=10
+[D] mode=lax verif_ms=1398 extraction_ms=759 build_ms=5900 total_ms=8058 | sauvegarde->rendu_ms=8427 | reloaded model-kept ms=11
 OK [D] « Valeur LAX : 1 »
-après D, sans interaction : alc-alive 1/4 vivants=0
-déchargement ALC : alc-alive 1/4 vivants=0 (vivants/remplacés après GC)
-RSS HostDev : 177328 Ko
+après D, sans interaction : alc-alive 0/4 vivants=
+déchargement ALC : alc-alive 0/4 vivants= (vivants/remplacés après GC)
+RSS HostDev : 184108 Ko
+OK déchargement : 0 ancien contexte vivant (alc-alive 0/4 vivants=)
 HOTRELOAD OK
-######## durée 66 s
+######## durée 68 s
 
 ######## mutations
 == M1 constante FNV
@@ -119,6 +120,6 @@ FAIL: printable 159
 checks=949803 fails=2
 => détectée par les tests
 MUTATIONS : toutes détectées
-######## durée 56 s
+######## durée 50 s
 
 TOUT OK
