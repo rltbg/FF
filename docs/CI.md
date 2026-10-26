@@ -52,7 +52,7 @@ Il pourrait théoriquement construire le seul WebAssembly (≈ 3 min ici, sous l
 - Le binaire F* Linux x86_64 tourne ici (conteneur) ; sur le runner `ubuntu-24.04`, ses dépendances système (non listées par la release) ne sont pas vérifiées.
 - `DOTNET_INSTALL_DIR` (dossier .NET mis en cache) : variable lue par `actions/setup-dotnet` d'après sa documentation ; non vérifiée ici.
 - Android : suppose que l'image `ubuntu-24.04` fournit la plateforme Android et le NDK (r27+) attendus par le workload ; sinon le job échoue (on n'ajoute pas `AcceptAndroidSDKLicenses`, décision de l'utilisateur).
-- iOS : `HostIOS` n'a jamais été compilé ; la version d'Xcode requise par le workload n'a pas pu être lue (aucune source trouvée) ; l'image `macos-26` est un choix à valider.
+- iOS : premier run (40361968206) : `error : This version of .NET for iOS (26.0.11017) requires Xcode 26.0. The current version of Xcode is 26.6` (Xcode par défaut de l'image `macos-26-arm64`). Correctif : `xcode-select -s /Applications/Xcode_26.0.1.app` (versions de l'image : 26.0.1 à 26.6, [liste](https://github.com/actions/runner-images/blob/macos-26-arm64/20261013.0424/images/macos/macos-26-arm64-Readme.md)). **Correctif non encore vérifié par un run** ; `HostIOS` (jamais compilé avant) a été restauré sans erreur jusqu'à ce point.
 - Aucun de ces binaires n'est lancé par la CI : seule la compilation est vérifiée (pas de test de fumée).
 
 ## Versions des actions (relevées le 2026-10-26 sur les pages de versions de chaque action)
