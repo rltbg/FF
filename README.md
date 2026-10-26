@@ -42,6 +42,6 @@ scripts/all.sh          # passe complète depuis zéro : extraction, build + AOT
 ```
 Tests : `ftests.sh` (suite F*), `upstream_tests.sh` (tests amont de F* via le backend F#), `ulib_sweep.sh` (221 modules d'ulib), `bench_model.sh`, `loc.sh`. Plateformes : `platforms_setup.sh`, `platforms.sh [cible]`, `browser_smoke.sh`. Scripts unitaires : `extract.sh [full|admit|lax]`, `build.sh`, `test.sh`, `ui_smoke.sh <cmd>`, `hotreload.sh`,
 `mutate.sh`, `matrix.sh`, `scale.sh`, `repro_char_code.sh`, `loop.sh [mode]`, `loop_bench.sh`, `startup.sh <label> <cmd>`,
-`list_scale.sh <cmd>`, `watch_check.sh`. GitHub Actions ne sert qu'à construire les plateformes (`.github/workflows/build.yml`, voir `docs/CI.md`, jamais exécuté) ; `scripts/all.sh` reste la passe complète de tests.
+`list_scale.sh <cmd>`, `watch_check.sh`. GitHub Actions ne sert qu'à construire les plateformes (`.github/workflows/build.yml`, voir `docs/CI.md` ; dernier run complet : 9 jobs verts) ; `scripts/all.sh` reste la passe complète de tests.
 Les tests GUI utilisent Xvfb (`:99`), `xdotool`, `xwininfo`/`xprop` (paquet `x11-utils`) et ImageMagick.
 `MVU_SOFTWARE_RENDERING=1` force le rendu X11 logiciel ; `MVU_TRACE=<fichier>` journalise le modèle après chaque rendu.

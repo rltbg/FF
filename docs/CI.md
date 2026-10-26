@@ -1,8 +1,23 @@
 # Intégration continue (GitHub Actions) : construire toutes les plateformes
 
 Décision de l'utilisateur (remplace l'ancienne règle « pas de GitHub Actions ») : GitHub Actions sert à **construire** les binaires de chaque plateforme.
-Workflow : `.github/workflows/build.yml`. **Il n'a jamais été exécuté** (ce conteneur n'a pas accès aux runners) : seule la syntaxe YAML a été vérifiée
-(`actionlint` n'a pas pu être téléchargé ici). Le premier lancement réel est le vrai test ; attendre des corrections.
+Workflow : `.github/workflows/build.yml`.
+
+## Dernier run complet : tout vert (run 40365069048, cibles `all`, 2026-10-26)
+
+| Job | Runner | Durée | Artefact |
+|---|---|---|---|
+| extract | ubuntu-24.04 | 16 s | `extracted` (9 Ko) |
+| linux-x64 | ubuntu-24.04 | 80 s | 15,2 Mo |
+| linux-arm64 | ubuntu-24.04-arm | 81 s | 14,5 Mo |
+| windows win-x64 | windows-2025 | 131 s | 42,2 Mo |
+| windows win-arm64 | windows-11-arm | 178 s | 41,1 Mo |
+| macos (arm64 + x64) | macos-15 | 145 s | 40,8 Mo |
+| wasm (AOT partiel) | ubuntu-24.04 | 199 s | 20,6 Mo (disque, avec les copies compressées) |
+| android (NativeAOT arm64) | ubuntu-24.04 | 163 s | 19,4 Mo |
+| ios (simulateur) | macos-26 | 404 s | 70,7 Mo |
+
+Durée de bout en bout : 7 min 6 s. Trois correctifs ont été nécessaires (Xcode 26.0.1, IL stripping iOS, NDK r27 Android : voir « Limites connues »). **Ce que la CI ne prouve pas** : aucun binaire n'est lancé (ni bureau, ni navigateur, ni APK sur appareil, ni app iOS sur simulateur) ; l'efficacité des caches n'a pas été mesurée (l'API des caches n'est pas accessible depuis ce conteneur).
 
 ## Déclenchement (pour ne gaspiller aucune minute)
 

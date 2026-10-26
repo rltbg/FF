@@ -51,7 +51,7 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 | **Windows, macOS** (lancement) | aucun accès ; les binaires se **construisent** (publication croisée) mais n'ont jamais été lancés ; aucune mesure n'est transposable |
 | **Android, iOS** (lancement) | APK construit, jamais installé (pas d'émulateur) ; iOS jamais compilé (macOS + Xcode requis) |
 | Taux de rafraîchissement, fluidité de défilement | pas de capture vidéo ni de mesure d'images par seconde |
-| **Intégration continue** | GitHub Actions **pour construire** toutes les plateformes (`.github/workflows/build.yml`, `docs/CI.md`) : écrit, syntaxe YAML vérifiée, **jamais exécuté**. Les tests restent `scripts/all.sh` |
+| **Intégration continue** | GitHub Actions **pour construire** toutes les plateformes (`.github/workflows/build.yml`, `docs/CI.md`) : **exécuté avec succès sur les 9 jobs** (run 40365069048, cibles `all`, 7 min 6 s de bout en bout) : extraction F*, Linux x64/arm64, Windows x64/arm64, macOS arm64+x64, WebAssembly, Android NativeAOT arm64, iOS simulateur. Les binaires ne sont **pas lancés** par la CI. Les tests restent `scripts/all.sh` |
 | `make fsharp-test` du dépôt F* | demande de reconstruire F* ; non lancé |
 
 ## Part de F* (`scripts/loc.sh`)
