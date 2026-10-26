@@ -54,3 +54,7 @@ Il pourrait théoriquement construire le seul WebAssembly (≈ 3 min ici, sous l
 - Android : suppose que l'image `ubuntu-24.04` fournit la plateforme Android et le NDK (r27+) attendus par le workload ; sinon le job échoue (on n'ajoute pas `AcceptAndroidSDKLicenses`, décision de l'utilisateur).
 - iOS : `HostIOS` n'a jamais été compilé ; la version d'Xcode requise par le workload n'a pas pu être lue (aucune source trouvée) ; l'image `macos-26` est un choix à valider.
 - Aucun de ces binaires n'est lancé par la CI : seule la compilation est vérifiée (pas de test de fumée).
+
+## Versions des actions (relevées le 2026-10-26 sur les pages de versions de chaque action)
+
+`actions/checkout@v7`, `actions/setup-dotnet@v6`, `actions/cache@v6`, `actions/upload-artifact@v7`, `actions/download-artifact@v8` : dernières versions majeures publiées. Les notes de version ne montrent aucune rupture touchant ce workflow (téléchargement d'artefact : décompression automatique des archives zip, erreur en cas de hash différent ; envoi : archive zip par défaut). Les versions sont épinglées par version majeure, pas par SHA : à durcir si la chaîne d'approvisionnement compte. Non exécuté : une rupture non signalée dans ces notes ne serait vue qu'au premier lancement.
