@@ -1,6 +1,3 @@
 #!/usr/bin/env bash
-# Suite de tests sous JIT puis sous NativeAOT.
-set -euo pipefail
-source "$(dirname "$0")/env.sh"
-echo "JIT: $(dotnet "$ROOT/app/Tests/bin/Release/net10.0/Tests.dll")"
-echo "AOT: $("$ROOT/out/Tests/Tests")"
+# Suite de tests : entièrement en F* (ftests/), extraite puis exécutée sous JIT et sous NativeAOT. Voir ftests.sh.
+exec "$(dirname "$0")/ftests.sh" "$@"

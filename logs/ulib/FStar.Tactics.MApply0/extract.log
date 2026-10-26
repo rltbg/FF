@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Tactics.MApply0.fst(71,0-72,26):
+  - While registering plugin `FStar.Tactics.MApply0.mapply0':
+
+* Error 385:
+  - Custard needs module FStarC.Tactics.InterpFuns, but no usable checked file
+    for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

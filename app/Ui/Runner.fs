@@ -34,7 +34,9 @@ type Runner(initial: CoreApi, window: Window) as this =
     Interp((fun msg -> this.Dispatch msg),
            (fun tag text -> this.Dispatch(api.MsgOfInput tag text)),
            (fun i -> this.Dispatch(api.MsgOfSelect i)),
-           (fun id text -> this.Dispatch(api.MsgOfText id text)))
+           (fun src -> this.Dispatch(api.MsgOfHash src)),
+           (fun src i -> api.BigItem src i),
+           (fun src s -> api.BigIndex src s))
 
   let mutable lastRenderMs = 0.0
 

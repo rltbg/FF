@@ -1,0 +1,3 @@
+Verified i'face (or impl+i'face): FStar.Tactics.BreakVC
+Verified module: FStar.Tactics.BreakVC
+All verification conditions discharged successfully

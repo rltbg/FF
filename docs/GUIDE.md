@@ -68,13 +68,19 @@ Pré-requis système pour l'interface : Xvfb, `xdotool`, `x11-utils` (xwininfo, 
 8. **Spécifications** (`noextract`, lemmes, types `prop`) sont éliminées sans effort ; ne pas les mêler au code exécuté.
 9. **Piège de test** : Custard évalue les termes clos à l'extraction. Un test d'extraction doit passer ses entrées par un effet
    (`MxUtil.blur`), sinon le code testé disparaît (`check true`) ; `matrix.sh` classe ce cas `VIDE`.
-10. **Vérifier dans l'ordre des dépendances** (`Core` puis `App`), avec `--cache_checked_modules` ; l'extraction relit les `.checked`.
+10. **Vérifier dans l'ordre des dépendances** (`Core`, `Big`, `App`), chaque module comme racine, avec `--cache_checked_modules` ; l'extraction relit les `.checked`.
+11. **Les tests sont en F\*** (jamais en F#) : `ftests/`, voir `docs/ULIB-COUVERTURE.md`. Un fait prouvé en F* que le F# extrait contredit devient un
+    cas `docs/matrix/MxNN` avec un lemme `sem` qui prouve la valeur de F*.
+12. **Éviter ce qui diverge** (chacun a un cas de reproduction, `UPSTREAM-FSTAR.md` §7–14) : `/` `%` sur négatifs ; `List.Tot.splitAt n l` avec
+    `n > length l` (lève) ; `bool_of_compare`/`compare_of_bool` (signes inversés) ; `String.lowercase/uppercase` hors ASCII ; `String.split` de `""` ;
+    la valeur exacte de `String.compare` (seul le signe est garanti) ; `FStar.UInt.sub_mod`/`decr_mod` ; `Printf.sprintf` avec entier machine ;
+    `Class.Printable.to_string` sur liste/option ; `RBMap.for_any` ; `either` ; `Float.bit_eq`/`to_string`.
 
 Commandes de base (équivalent de `scripts/extract.sh`) :
 ```
 A="--odir _output --cache_dir _cache --already_cached Prims,FStar --warn_error -321"
-fstar.exe $A --cache_checked_modules Core.fst && fstar.exe $A --cache_checked_modules App.fst
-fstar.exe $A --codegen FSharp --custard_entry_module Core --custard_entry_module App App.fst -o Extracted.fs
+for m in Core Big App; do fstar.exe $A --cache_checked_modules $m.fst; done
+fstar.exe $A --codegen FSharp --custard_entry_module Core --custard_entry_module Big --custard_entry_module App App.fst -o Extracted.fs
 ```
 Custard écrit `Extracted.fs`, `FStarCustard.fs` (bibliothèque d'exécution embarquée, 228 lignes utiles) et `Extracted.fsproj`.
 
@@ -85,26 +91,31 @@ sur `byte[]` **prouvée égale** (`lemma_fnv_bytes`), empreinte `fnv_utf8` d'une
 (`parse_nat` : `Some n` ⇔ que des chiffres ASCII et valeur ≤ 1000, **et** `n` est cette valeur) ; `name_ok` (1 à 20 unités
 UTF-16, sans caractère de contrôle C0/DEL/C1).
 
+**`fst/Big.fst`** — les données volumineuses, **générées à la demande par F\***, jamais stockées : `row i` (« Ligne 000042 — donnée côté hôte », 100 000
+lignes), `line i` (38 000 lignes d'un texte de 1 022 080 octets), leurs réciproques `row_index`/`line_index` (un indice n'est renvoyé que si `row n = s` : lemmes
+`lemma_row_index_sound`, `lemma_line_index_sound`), `text_of` (le texte entier, pour le hachage), et l'interface `item`/`index_of` par numéro de source.
+
 **`fst/App.fst`** — modèle (`tab`, `counter : Int32`, `items` aux ids strictement décroissants, `draft`, `name`, `age`, `status`,
 `sel`, `digest`), messages, `update`, `view`. Invariant `inv` : compteur dans [-1000, 1000], ids triés et < `next_id`,
 `next_id` sans débordement, `sel < 100 000`. Lemmes d'application : `inc`/`dec`, `add` (+1), `remove` (élément absent),
 `select` (sélection exacte, hors plage = inchangé), `hash_text` (condensé = (longueur, FNV-1a de l'UTF-8)), formulaire accepté
-(nom valide, âge analysé, empreinte exacte).
+(nom valide, âge analysé, empreinte exacte). `HashText id` fait générer le texte par `Big.text_of` puis le hache ; `show_model` (journal de test
+`MVU_TRACE`) et `preload_msgs` (charge `MVU_PRELOAD`) sont aussi écrits en F\* : l'hôte ne formate rien.
 
 Ce que les preuves **ne** couvrent **pas** (les tests les gardent) : les constantes FNV, la règle des caractères de contrôle.
 
 ## 5. L'hôte (F# écrit à la main)
 
-- `app/Ui/Node.fs` : type `Node` (indépendant de F* et d'Avalonia), `CoreApi` (les 6 fonctions que l'hôte connaît du cœur),
-  `BigData` (lignes et texte générés côté hôte).
+- `app/Ui/Node.fs` : type `Node` (indépendant de F* et d'Avalonia), `CoreApi` (les 8 fonctions que l'hôte connaît du cœur : `Init`, `Update`, `View`,
+  `MsgOfInput`, `MsgOfSelect`, `MsgOfHash`, `BigItem`, `BigIndex` — les deux dernières appellent `Big.item`/`Big.index_of`).
 - `app/Ui/Interp.fs` : interpréteur `Node → contrôles` **avec réconciliation** : l'arbre précédent est comparé position par
   position, les contrôles du même genre sont réutilisés (clics et focus ne sont pas perdus). Écoute synchrone de
   `TextBox.TextProperty` (l'événement `TextChanged` est asynchrone). `BigList`/`BigText` : `ListBox` virtualisée sur une `IList`
-  dont les lignes sont calculées à la demande (`LazyRows`).
+  dont les lignes sont demandées une à une à F* (`LazyRows` : simple plomberie `IList` en lecture seule, toute la logique est dans `fst/Big.fst`).
 - `app/Ui/Runner.fs` : boucle MVU, `UiApp`, `Startup.run` (`UsePlatformDetect`, `MVU_SOFTWARE_RENDERING=1` force le rendu X11
   logiciel, `MVU_TRACE=<fichier>` journalise le modèle après chaque rendu). **Panneau hôte stable** dans le `ScrollViewer`
   (contournement d'un défaut d'Avalonia 12.1.4, voir `TODO-avalonia-upstream.md`).
-- `app/HostStatic` : lie `Extracted` statiquement ; seule colle : `toNode` (arbre de vue F* → `Node`).
+- `app/HostStatic` : lie `Extracted` statiquement ; seule colle : `toNode` (arbre de vue F* → `Node`) ; journal et préchargement viennent de F*.
 - `app/HostDev` : charge `Extracted.dll` dans un `AssemblyLoadContext` collectible, transfère le modèle par copie
   structurelle (`Reload.transplant`), surveille le fichier (sondage 200 ms : `FileSystemWatcher` ne voyait pas les réécritures
   de MSBuild dans le conteneur), mesure le déchargement. Réflexion : **dev uniquement, non AOT**.
@@ -124,14 +135,14 @@ Ce qui exige un redémarrage ou une réinitialisation : un **changement de type 
 |---|---|
 | 100 000 éléments **dans le modèle F\*** | construction 238–346 ms, 10,8 Mo ; `Toggle` 7–17 ms ; `view` 75–80 ms pour 200 008 nœuds. Afficher cela sans virtualisation est impraticable |
 | Liste **non virtualisée** (un contrôle par élément) | 1 000 éléments : interface occupée 1,7 s (AOT) ; 5 000 : 6 s et 0,9 Go |
-| **Liste virtualisée de 100 000 lignes côté hôte** (retenue) | +0 Mo de RSS, défilement jusqu'à la ligne 99 999 ; F* ne garde `sel` ; `Select` = 0,055 µs |
+| **Liste virtualisée de 100 000 lignes, générées par F\* à la demande** (retenue) | +0 Mo de RSS, défilement jusqu'à la ligne 99 999 ; F* ne garde que `sel` ; `Select` = 0,055 µs |
 | `TextBox` avec 1 Mo | **+170 Mo de RSS** |
-| **Visualiseur de lignes virtualisé** pour 1 Mo (retenu) | +6 Mo ; le texte entier n'est construit que pour le hachage |
+| **Visualiseur de lignes virtualisé** pour 1 Mo (retenu) | +6 Mo ; le texte entier n'est construit (par F\*) que pour le hachage |
 | Hachage F* du texte de 1 022 080 octets | 3,0 à 3,6 ms (`fnv_utf8`), `HashText` 2,3 ms ; résultat vérifié contre une référence Python |
 
 ## 8. NativeAOT
 
-`dotnet publish -c Release -r linux-x64` (`PublishAot=true` dans `HostStatic.fsproj` et `Tests.fsproj`, `IsAotCompatible` via
+`dotnet publish -c Release -r linux-x64` (`PublishAot=true` dans `HostStatic.fsproj` ; la suite de tests F* est aussi publiée en AOT par `scripts/ftests.sh`, `IsAotCompatible` via
 `app/Directory.Build.props`). Seuls warnings : `IL3053` et `IL2104` de FSharp.Core. Règles : pas de `sprintf`/`string` sur des
 unions F# (réflexion), pas de réflexion dans `Ui`/`HostStatic` ; `HostDev` n'est pas publié en AOT.
 Mesures (`logs/startup_bench_final.log`) : livrable **34,7 Mo** (binaire 20,7 + Skia 11,2 + HarfBuzz 2,8) ; fenêtre affichée en
@@ -154,6 +165,7 @@ Mesa (rastérisation logicielle) : **ces chiffres ne valent ni pour un GPU ni po
 
 - **Ajouter un écran** : constructeur dans `tab`, branche dans `view`, éventuellement un nouveau cas de `view_tree` ; l'interpréteur
   (`Interp.fs`) et les deux conversions (`HostStatic/Program.fs: toNode`, `HostDev/Reload.fs: toNode`) doivent connaître le nouveau
-  nœud (le compilateur F# signale les motifs incomplets). Ajouter un lemme et un test (`Tests/Program.fs`) pour la nouvelle règle.
+  nœud (le compilateur F# signale les motifs incomplets). Ajouter un lemme et un test **en F\*** (`ftests/TApp.fst`, cas dans `test_cases` et vérification pas à pas dans `check_step`) pour la nouvelle règle ;
+  `scripts/mutate.sh` doit alors détecter une mutation de cette règle (en ajouter une).
 - **Ajouter une garantie** : écrire le lemme dans `App.fst`, et si l'extraction n'est pas triviale, un cas dans `docs/matrix/`.
 - **Ajouter un test GUI** : une étape dans `scripts/ui_smoke.sh` avec un `expect` sur le journal `MVU_TRACE`.

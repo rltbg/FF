@@ -1,0 +1,17 @@
+* Error 364:
+  - The argument passed to the monomorphized binder number 0 of
+    FStar.Dyn.__proj__Mkvalue_type_bundle__item__x is b, the result of an
+    effectful computation, so the whole argument is a hole (section 3.2c) and no
+    skeleton is left to specialize on.
+  - Unlike a runtime parameter, this cannot be fixed by an annotation: the
+    computation runs when the program runs, so b is never known earlier. What is
+    left is to pass the value at runtime -- for a typeclass dictionary, ordinary
+    dictionary passing -- which is the identity-skeleton end of section 3.2c.
+  - To ask for that here, write [FStar.Custard.dyn b].
+  - It is opt-in, and per call site, because it reintroduces the indirect calls
+    monomorphization exists to remove: other calls to this function are still
+    specialized.
+  - Reached through:
+  -   FStar.Dyn.undyn
+
+1 error was reported (see above)

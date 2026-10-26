@@ -1,0 +1,162 @@
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(42,24-42,39):
+  - FStar.Int.Cast.uint64_to_int32 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(175,4-175,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(44,24-44,39):
+  - FStar.Int.Cast.uint32_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(160,4-160,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(46,24-46,38):
+  - FStar.Int.Cast.uint16_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(147,4-147,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(48,24-48,38):
+  - FStar.Int.Cast.uint64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(185,4-185,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(50,24-50,38):
+  - FStar.Int.Cast.uint64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(185,4-185,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(52,24-52,38):
+  - FStar.Int.Cast.uint64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(185,4-185,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(54,24-54,39):
+  - FStar.Int.Cast.uint16_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(142,4-142,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(56,24-56,39):
+  - FStar.Int.Cast.uint16_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(142,4-142,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(58,24-58,37):
+  - FStar.Int.Cast.uint8_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(131,4-131,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(60,24-60,37):
+  - FStar.Int.Cast.uint8_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(131,4-131,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(70,24-70,38):
+  - FStar.Int.Cast.int64_to_int32 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(105,4-105,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(72,24-72,38):
+  - FStar.Int.Cast.int32_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(95,4-95,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(74,24-74,37):
+  - FStar.Int.Cast.int16_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(87,4-87,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(76,24-76,37):
+  - FStar.Int.Cast.int64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(115,4-115,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(78,24-78,37):
+  - FStar.Int.Cast.int64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(115,4-115,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(80,24-80,37):
+  - FStar.Int.Cast.int64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(115,4-115,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(42,24-42,39):
+  - FStar.Int.Cast.uint64_to_int32 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(175,4-175,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(44,24-44,39):
+  - FStar.Int.Cast.uint32_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(160,4-160,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(46,24-46,38):
+  - FStar.Int.Cast.uint16_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(147,4-147,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(48,24-48,38):
+  - FStar.Int.Cast.uint64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(185,4-185,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(50,24-50,38):
+  - FStar.Int.Cast.uint64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(185,4-185,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(52,24-52,38):
+  - FStar.Int.Cast.uint64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(185,4-185,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(54,24-54,39):
+  - FStar.Int.Cast.uint16_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(142,4-142,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(56,24-56,39):
+  - FStar.Int.Cast.uint16_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(142,4-142,19)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(58,24-58,37):
+  - FStar.Int.Cast.uint8_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(131,4-131,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(60,24-60,37):
+  - FStar.Int.Cast.uint8_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(131,4-131,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(70,24-70,38):
+  - FStar.Int.Cast.int64_to_int32 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(105,4-105,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(72,24-72,38):
+  - FStar.Int.Cast.int32_to_int16 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(95,4-95,18)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(74,24-74,37):
+  - FStar.Int.Cast.int16_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(87,4-87,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(76,24-76,37):
+  - FStar.Int.Cast.int64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(115,4-115,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(78,24-78,37):
+  - FStar.Int.Cast.int64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(115,4-115,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/machine_integers/TestCasts.fst(80,24-80,37):
+  - FStar.Int.Cast.int64_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(115,4-115,17)
+
+Verified module: TestCasts
+All verification conditions discharged successfully

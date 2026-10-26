@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Tactics.Print.fst(14,0-16,25):
+  - While registering plugin `FStar.Tactics.Print.namedv_to_string':
+
+* Error 385:
+  - Custard needs module FStarC.Tactics.InterpFuns, but no usable checked file
+    for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

@@ -2,16 +2,28 @@
 ######## setup
 F* 2026.10.25
 10.0.403
-######## durée 1 s
+######## durée 0 s
+
+######## sources (F*, Avalonia)
+déjà présent : FStar (v2026.10.25)
+déjà présent : Avalonia (12.1.4)
+
+F*       : /home/user/ff/.tools/src/FStar/ulib  /home/user/ff/.tools/src/FStar/src/custard  /home/user/ff/.tools/src/FStar/doc/ref/custard.md  /home/user/ff/.tools/src/FStar/tests/custard
+Avalonia : /home/user/ff/.tools/src/Avalonia/src
+Autres sources utiles : paquets NuGet (~/.nuget/packages/*/lib/*/*.xml pour la doc XML) ; FSharp.Core ;
+                        runtime .NET (https://github.com/dotnet/runtime, tag v10.0.x) pour AssemblyLoadContext, NativeAOT.
+######## durée 0 s
 
 ######## vérification + extraction
 Verified module: Core
 All verification conditions discharged successfully
-Verified module: App
+Verified module: Big
 All verification conditions discharged successfully
 Verified module: App
 All verification conditions discharged successfully
-######## durée 5 s
+Verified module: App
+All verification conditions discharged successfully
+######## durée 9 s
 
 ######## compilation + NativeAOT
 
@@ -19,39 +31,41 @@ Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:09.49
+Time Elapsed 00:00:39.68
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:05.41
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:05.43
+Time Elapsed 00:00:07.05
   Ui -> /home/user/ff/app/Ui/bin/Release/net10.0/Ui.dll
   Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
   HostStatic -> /home/user/ff/app/HostStatic/bin/Release/net10.0/linux-x64/HostStatic.dll
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/HostStatic/HostStatic.fsproj]
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/HostStatic/HostStatic.fsproj]
   HostStatic -> /home/user/ff/out/HostStatic/
-  Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
-  Tests -> /home/user/ff/app/Tests/bin/Release/net10.0/linux-x64/Tests.dll
-/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/Tests/Tests.fsproj]
-/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/Tests/Tests.fsproj]
-  Tests -> /home/user/ff/out/Tests/
+######## durée 117 s
+
+######## tests F* (JIT + AOT)
+vérifié : TUtil TCore TBig TApp TList TMachineLib TMachine TString TBytes TIO TUlib TFloat TMain
+extrait : 8549 lignes F# générées, 471 appels de check
+== JIT
+machine : exécutés=202055 ignorés (précondition)=30688
+checks=1490342 fails=0
+IO : sortie conforme à ftests/IO.expected (39 lignes)
+  TMain -> /home/user/ff/out/ftests/fs/bin/Release/net10.0/linux-x64/TMain.dll
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/out/ftests/fs/TMain.fsproj]
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/out/ftests/fs/TMain.fsproj]
+  TMain -> /home/user/ff/out/ftests/aot/
+== AOT
+machine : exécutés=202055 ignorés (précondition)=30688
+checks=1490342 fails=0
+IO : sortie conforme à ftests/IO.expected (39 lignes)
+couverture des réalisations : 187 réalisations déclarées ; 171 exercées par la suite ; 16 bloquées ou éliminées (raison dans le tableau) ; 0 non exercées.
 ######## durée 99 s
 
-######## tests JIT + AOT
-JIT: checks=950851 fails=0
-AOT: checks=950851 fails=0
-######## durée 1 s
-
 ######## GUI AOT
-OK fenêtre _NET_WM_PID=26673 = PID 26673
+OK fenêtre _NET_WM_PID=32161 = PID 32161
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
@@ -63,124 +77,15 @@ OK [volumes] tab=big
 OK [select ligne 3] sel=2 digest=-
 OK [fin de liste] sel=99999
 OK [hachage 1 Mo par F*] digest=1,832080,1791175457
-RSS : 113 Mo avant l'onglet Volumes, 113 Mo juste après ; 118 Mo en fin de test
+RSS : 113 Mo avant l'onglet Volumes, 113 Mo juste après ; 136 Mo en fin de test
 rendus journalisés : 72
 SMOKE OK
 ######## durée 18 s
 
 ######## GUI JIT
-OK fenêtre _NET_WM_PID=26878 = PID 26878
+OK fenêtre _NET_WM_PID=32392 = PID 32392
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
 OK [cocher] items=poires[x],pommes[ ]
 OK [supprimer] items=pommes[ ] 
-OK [accepte] status=accepted:Ada Lovelace,36,4267605246
-OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
-OK [volumes] tab=big
-OK [select ligne 3] sel=2 digest=-
-OK [fin de liste] sel=99999
-OK [hachage 1 Mo par F*] digest=1,832080,1791175457
-RSS : 172 Mo avant l'onglet Volumes, 173 Mo juste après ; 178 Mo en fin de test
-rendus journalisés : 72
-SMOKE OK
-######## durée 19 s
-
-######## rechargement à chaud
-OK [état] « Valeur : 3 »
-[A] mode=full verif_ms=3359 extraction_ms=847 build_ms=5000 total_ms=9207 | sauvegarde->rendu_ms=9458 | reloaded model-kept ms=35
-OK [A] « Valeur HOT : 3 »
-[B] mode=full verif_ms=3221 extraction_ms=824 build_ms=4973 total_ms=9020 | sauvegarde->rendu_ms=9330 | reloaded model-kept ms=13
-OK [B] « Valeur HOT : 10 »
-[C] mode=full verif_ms=3618 extraction_ms=895 build_ms=4997 total_ms=9512 | sauvegarde->rendu_ms=9814 | reloaded model-RESET (champs changés: app_model) ms=14
-OK [C] « Valeur HOT : 0 »
-OK [C] modèle réinitialisé : model-RESET (champs changés: app_model)
-[D] mode=lax verif_ms=1432 extraction_ms=817 build_ms=5494 total_ms=7744 | sauvegarde->rendu_ms=7997 | reloaded model-kept ms=12
-OK [D] « Valeur LAX : 1 »
-OK [E sélection] « BigList 100000 sel=2 »
-OK [E condensé] « Texte 1 : 832080 »
-OK [E après rechargement : sélection conservée] « BigList 100000 sel=2 »
-OK [E après rechargement : condensé conservé] « Texte 1 : 832080 »
-après D, sans interaction : alc-alive 0/5 vivants=
-déchargement ALC : alc-alive 0/5 vivants= (vivants/remplacés après GC)
-RSS HostDev : 184772 Ko
-OK déchargement : 0 ancien contexte vivant (alc-alive 0/5 vivants=)
-HOTRELOAD OK
-######## durée 72 s
-
-######## mutations
-== M1 constante FNV
-F* (preuves complètes) : ACCEPTÉE
-FAIL: fnv = ref
-FAIL: fnv_utf8 = ref
-checks=950851 fails=39534
-=> détectée par les tests
-== M2 borne d'âge 151
-F* (preuves complètes) : REJETÉE
-* Error 19 at Core.fst(119,36-119,37):
-  - Expected type n: FStar.UInt32.t{FStar.UInt32.v n <= 150}
-    got type n: FStar.UInt32.t{FStar.UInt32.v n <= 1000}
-  - Failed to prove: FStar.UInt32.v n <= 150
-=> détectée par F*
-en --lax : extraite, tests :
-FAIL: age diff 151
-FAIL: age diff 151
-checks=950851 fails=10
-=> détectée aussi par les tests
-== M3 règle printable
-F* (preuves complètes) : ACCEPTÉE
-FAIL: nom C1 0x9F
-FAIL: printable 159
-checks=950851 fails=2
-=> détectée par les tests
-MUTATIONS : toutes détectées
-######## durée 56 s
-
-######## matrice d'extraction F*
-Mx01_Char          OK       
-Mx02_CharU32       EXTRACT  * Error 395:   - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and     has no F# realization. 
-Mx03_CharOfInt     OK       
-Mx04_String        OK       
-Mx05_StringIndex   OK       
-Mx06_List          OK       
-Mx07_ListSort      OK       
-Mx08_Option        OK       
-Mx09_Seq           OK       
-Mx10_Set           OK       
-Mx11_Map           OK       
-Mx12_RBMap         OK       
-Mx13_OrdSet        OK       
-Mx14_UInt64        OK       
-Mx15_Int64         OK       
-Mx16_Cast          OK       
-Mx17_UInt128       OK       
-Mx18_Printf        OK       
-Mx19_PrimsInt      OK       
-Mx20_Bytes         OK       
-Mx21_Ghost         OK       
-Mx22_Poly          OK       
-Mx23_Exn           OK       
-Mx24_Float64       OK       
-Mx25_PrimsIntDivNeg RUN      FAIL 
-Mx26_UnaryMinus    EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
-Mx27_PrimsAbs      EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
-Mx28_Int32DivNeg   OK       
-
-résumé :       3 EXTRACT      24 OK       1 RUN 
-conforme à docs/matrix/EXPECTED.tsv
-######## durée 51 s
-
-######## reproduction char_code
-cas 1 : u32_of_char tel quel
-  OK Error 395 (char_code) comme documenté
-cas 2 : --custard_extern_type FStar.Char.char_code=uint32
-  OK l'option ne contourne pas l'erreur, comme documenté
-cas 3 : contournement B (assume val + custard_extern)
-  OK extrait, compile, s'exécute
-cas 4 : contournement A (int_of_char)
-  OK extrait, compile, s'exécute
-cas 5 : 0xD7FF est-il un char_code ? (spec : n < 0xd7ff)
-  OK rejeté (0xD7FF exclu par la spec actuelle, probable erreur d'un cran)
-######## durée 13 s
-
-TOUT OK

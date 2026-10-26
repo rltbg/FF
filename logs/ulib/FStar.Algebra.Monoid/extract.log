@@ -1,0 +1,10 @@
+* Error 379:
+  - Custard: FStar.Algebra.Monoid.uu___1 refers to FStar.Algebra.Monoid.neg,
+    which is not in the program.
+  - Nothing declares it, so the generated code would not compile, and if it is
+    an external its target name and header were never read either.
+  - A rule that synthesizes a call to a runtime entry point has to keep it
+    alive: register it with FStarC.Custard.Builtins.register_root, next to the
+    rule itself (section 36.2). Otherwise this is a misspelled name.
+
+1 error was reported (see above)

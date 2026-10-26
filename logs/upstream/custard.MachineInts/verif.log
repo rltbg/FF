@@ -1,0 +1,12 @@
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/custard/MachineInts.fst(40,37-40,50):
+  - FStar.Int.Cast.int32_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(100,4-100,17)
+
+* Warning 288 at /home/user/ff/.tools/src/FStar/tests/custard/MachineInts.fst(40,37-40,50):
+  - FStar.Int.Cast.int32_to_int8 is deprecated
+  - with care; in C the result is implementation-defined when not representable
+  - See also /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Int.Cast.fst(100,4-100,17)
+
+Verified module: MachineInts
+All verification conditions discharged successfully

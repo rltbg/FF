@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Reflection.V2.Formula.fst(89,0-166,76):
+  - While registering plugin `FStar.Reflection.V2.Formula.term_as_formula'':
+
+* Error 385:
+  - Custard needs module FStarC.Syntax.Embeddings.Base, but no usable checked
+    file for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

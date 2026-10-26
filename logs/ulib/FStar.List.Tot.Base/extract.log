@@ -1,0 +1,24 @@
+* Warning 382:
+  - Custard erased 1 parameter(s) of the external FStar.List.Tot.Base.for_allP:
+    pre.
+  - An external's prototype is fixed outside F*, so the generated call now has
+    fewer arguments than the C declaration it is checked against.
+  - A pure function-typed parameter is the usual cause: [unit -> unit] is a
+    specification and is erased, while [unit -> FStar.All.ML unit] is a
+    computation and is kept.
+  - If the parameter really carries nothing, write its type as [erased t], which
+    says so and silences this.
+  - Reached through:
+  -   FStar.List.Tot.Base.for_allP
+
+* Error 395:
+  - Custard: FStar.List.Tot.Base.mapi_init has no F* definition and no F#
+    realization.
+  - It is declared by FStar.List.Tot.Base, which F* realizes with hand-written
+    OCaml in ulib/ml. The F# backend compiles to .NET's own types rather than to
+    that library, so it accepts the programs the C backend accepts and not the
+    ones the OCaml backend accepts (section 122).
+  - Give it a target with [@@custard_extern "..."] and supply that name
+    yourself, or extract this program with --codegen OCaml.
+
+1 error was reported (see above)

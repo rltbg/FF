@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Reflection.TermEq.Simple.fst(7,0-7,21):
+  - While registering plugin `FStar.Reflection.TermEq.Simple.term_eq':
+
+* Error 385:
+  - Custard needs module FStarC.Syntax.Embeddings, but no usable checked file
+    for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

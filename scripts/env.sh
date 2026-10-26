@@ -6,6 +6,8 @@ DOTNET_VERSION=10.0.403
 export DOTNET_ROOT="$TOOLS/dotnet"
 export PATH="$TOOLS/dotnet:$TOOLS/fstar/bin:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+# Modules F* du cœur, dans l'ordre des dépendances (vérification et extraction).
+FST_MODULES=(Core Big App)
 FSTAR_ARGS=(--odir "$ROOT/fst/_output" --cache_dir "$ROOT/fst/_cache" --already_cached Prims,FStar --warn_error -321)
 # fstar_mode full|admit|lax : remplit FA (cache séparé par mode, les .checked dépendent des options)
 fstar_mode() {

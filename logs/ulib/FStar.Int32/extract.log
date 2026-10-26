@@ -1,0 +1,10 @@
+* Error 395:
+  - Custard: FStar.Int32.v has no F* definition and no F# realization.
+  - It is declared by FStar.Int32, which F* realizes with hand-written OCaml in
+    ulib/ml. The F# backend compiles to .NET's own types rather than to that
+    library, so it accepts the programs the C backend accepts and not the ones
+    the OCaml backend accepts (section 122).
+  - Give it a target with [@@custard_extern "..."] and supply that name
+    yourself, or extract this program with --codegen OCaml.
+
+1 error was reported (see above)

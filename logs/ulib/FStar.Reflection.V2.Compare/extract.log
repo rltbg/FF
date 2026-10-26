@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Reflection.V2.Compare.fst(28,0-29,75):
+  - While registering plugin `FStar.Reflection.V2.Compare.compare_name':
+
+* Error 385:
+  - Custard needs module FStarC.Syntax.Embeddings.Base, but no usable checked
+    file for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

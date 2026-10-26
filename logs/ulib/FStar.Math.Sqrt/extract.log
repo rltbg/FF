@@ -1,0 +1,3 @@
+Verified i'face (or impl+i'face): FStar.Math.Sqrt
+Verified module: FStar.Math.Sqrt
+All verification conditions discharged successfully

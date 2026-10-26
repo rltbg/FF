@@ -15,8 +15,11 @@ one() {
   elif ! fstar.exe "${A[@]}" --codegen FSharp --custard_main $m.main $m.fst -o o/$m/$m.fs > extract.log 2>&1; then st=EXTRACT; detail=$(grep -m1 -A2 "Error" extract.log | tr '\n' ' ' | cut -c1-230)
   elif ! ( cd o/$m && dotnet build -c Release --nologo -v quiet > ../../build.log 2>&1 ); then st=BUILD; detail=$(grep -m1 "error" build.log | sed 's|.*/||' | cut -c1-230)
   else
-    local out; out=$(cd o/$m && dotnet bin/Release/net10.0/$m.dll 2>&1)
-    if [[ "$out" == *OK* && "$out" != *FAIL* ]]; then
+    local out rc; out=$(cd o/$m && timeout 30 dotnet bin/Release/net10.0/$m.dll 2>&1); rc=$?
+    if [ $rc -eq 124 ]; then st=RUN; detail="TIMEOUT 30 s (boucle infinie ?) ; sortie partielle : $(echo "$out" | head -2 | tr '\n' ' ')"
+    elif [ -f "$ROOT/docs/matrix/$m.expected" ] && [ "$out" != "$(cat "$ROOT/docs/matrix/$m.expected")" ]; then
+      st=RUN; detail="sortie différente de docs/matrix/$m.expected : $(diff <(echo "$out") "$ROOT/docs/matrix/$m.expected" | head -3 | tr '\n' ' ')"
+    elif [[ "$out" == *OK* && "$out" != *FAIL* ]]; then
       # garde-fou : Custard évalue les termes clos ; un check dont l'argument est devenu `true` ne teste plus rien
       if grep -qE "_check \(*true\)*[ )]|_check \(*true\)*$" o/$m/$m.fs; then st=VIDE; detail="un check est devenu 'true' à l'extraction (terme clos évalué)"; else st=OK; fi
     else st=RUN; detail=$(echo "$out" | head -2 | tr '\n' ' ' | cut -c1-230); fi

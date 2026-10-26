@@ -1,0 +1,36 @@
+custard.AnyCond	OK	
+custard.AnyException	OK	
+custard.BytesFS	OK	
+custard.EmptyMatch	OK	
+custard.Exceptions	OK	
+custard.FloatSpecial	OK	
+custard.Floats	OK	
+custard.FsPointFree	OK	
+custard.FsRecMatch	OK	
+custard.FsSizet32	OK	
+custard.Hello	OK	
+custard.KrmlBasic	OK	
+custard.LitBase	OK	
+custard.LitStr	OK	
+custard.Literals	OK	
+custard.MachineInts	OK	
+custard.Mymon	OK	
+custard.OcamlEscape	OK	
+custard.Recursion	OK	
+custard.Refs	OK	
+custard.Rotate	OK	
+custard.ShortCircuit	OK	
+custard.Typeclass	OK	
+custard.TyvarQuote	OK	
+custard.Union	OK	
+custard.UnitPtr	OK	
+custard.Unroll	OK	
+custard.Wide128	OK	
+machine_integers.Test01	OK	
+machine_integers.Test02	OK	
+machine_integers.Test03	OK	
+machine_integers.TestCasts	OK	
+machine_integers.TestChar	EXTRACT	* Error 395:   - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and     has no F# realization. 
+machine_integers.TestPrint	EXTRACT	* Error 395:   - Custard: FStar.UInt8.to_string_hex has no F* definition and no F#     realization. 
+machine_integers.TestRotate	OK	
+machine_integers.TestShift	EXTRACT	* Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 

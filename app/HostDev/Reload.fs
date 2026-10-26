@@ -75,9 +75,10 @@ let rec toNode (v: obj) : Node =
   | "App_VInput" -> Input (f.[0], f.[1] :?> string, f.[2] :?> string)
   | "App_VCheck" -> Check (f.[0] :?> string, f.[1] :?> bool, f.[2])
   | "App_VBigList" ->
-    // f.[1] : option<uint32> (null = None)
-    BigList (f.[0] :?> uint32, (match f.[1] with null -> -1L | o -> int64 (o.GetType().GetProperty("Value").GetValue(o) :?> uint32)))
-  | "App_VBigText" -> BigText (f.[0] :?> uint32)
+    // f.[2] : option<uint32> (null = None)
+    BigList (f.[0] :?> uint32, f.[1] :?> uint32,
+             (match f.[2] with null -> -1L | o -> int64 (o.GetType().GetProperty("Value").GetValue(o) :?> uint32)))
+  | "App_VBigText" -> BigText (f.[0] :?> uint32, f.[1] :?> uint32)
   | n -> failwith ("noeud de vue inconnu: " + n)
 
 /// Charge Extracted.dll depuis ses octets (pas de verrou sur le fichier) dans un contexte collectible.
@@ -92,7 +93,8 @@ let load (path: string) : CoreAlc * CoreApi * Type =
     | null -> failwith ("fonction absente: " + n)
     | mi -> mi
   let upd, vw, inp = fn "app_update", fn "app_view", fn "app_msg_of_input"
-  let msel, mtxt = fn "app_msg_of_select", fn "app_msg_of_text"
+  let msel, mhash = fn "app_msg_of_select", fn "app_msg_of_hash"
+  let bitem, bindex = fn "big_item", fn "big_index_of"
   let init = m.GetProperty("app_init").GetValue(null)
   let api =
     { Init = init
@@ -100,5 +102,7 @@ let load (path: string) : CoreAlc * CoreApi * Type =
       View = fun mo -> toNode (vw.Invoke(null, [| mo |]))
       MsgOfInput = fun t s -> inp.Invoke(null, [| t; s |])
       MsgOfSelect = fun i -> msel.Invoke(null, [| box i |])
-      MsgOfText = fun id s -> mtxt.Invoke(null, [| box id; box s |]) }
+      MsgOfHash = fun src -> mhash.Invoke(null, [| box src |])
+      BigItem = fun src i -> bitem.Invoke(null, [| box src; box (bigint i) |]) :?> string
+      BigIndex = fun src s -> int (bindex.Invoke(null, [| box src; box s |]) :?> bigint) }
   alc, api, upd.GetParameters().[0].ParameterType

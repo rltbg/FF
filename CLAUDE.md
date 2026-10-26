@@ -21,7 +21,7 @@ Avant d'écrire ou de modifier du code qui s'appuie sur F*, Custard, Avalonia ou
 ## 2. Règles de méthode
 
 - Ne jamais annoncer qu'une étape réussit sans l'avoir exécutée ; garder les erreurs exactes. Une étape impossible est un résultat.
-- `scripts/all.sh` (≈ 6 min) doit finir par « TOUT OK » avant de conclure ; mettre à jour `README.md`, `REPORT.md`, `docs/STATUT.md`
+- `scripts/all.sh` (≈ 25 min) doit finir par « TOUT OK » avant de conclure ; mettre à jour `README.md`, `REPORT.md`, `docs/STATUT.md`
   quand un chiffre ou un comportement change.
 - Pour chaque contournement : l'erreur exacte, la version, « inévitable » (défaut de la version) ou « évitable » (mon choix de code).
 - Ne pas déposer de ticket ni publier quoi que ce soit en dehors de ce dépôt sans accord explicite de l'utilisateur.
@@ -38,4 +38,25 @@ Avant d'écrire ou de modifier du code qui s'appuie sur F*, Custard, Avalonia ou
 - Avalonia 12.1.4 : `ScrollContentPresenter` retient le premier contenu : ne pas remplacer le contenu d'un `ScrollViewer`
   (voir `app/Ui/Runner.fs`). `TextBox.TextChanged` est asynchrone ; écouter `TextProperty`. Pas de `string`/`sprintf` sur des unions F#
   dans le code AOT (réflexion).
+- Custard : `sprintf` avec un argument entier machine (`%y %i %l %L %uy…`) s'exécute en `failwith "Prims.admit"`, même flouté (Mx46) ; `Class.Printable.to_string` sur une liste ou un `Some` boucle à l'infini (Mx40) ; `RBMap.for_any` est faux
+  dans ulib (Mx42) ; `String.lowercase/uppercase` ne touche que l'ASCII dans F* mais Unicode en .NET (Mx36).
 - Shell : ne pas utiliser `pkill -f <motif>` quand le motif figure dans sa propre ligne de commande (cela tue le shell).
+
+## 4. Tests : **uniquement du F\***, jamais de F# (décision de l'utilisateur)
+
+- Les tests sont des programmes F* (`ftests/*.fst`, `docs/matrix/*.fst`), extraits par Custard (`--custard_main`) puis exécutés en JIT et en
+  NativeAOT (`scripts/ftests.sh`). Aucun fichier F# n'est écrit pour tester. Les générateurs de texte (`scripts/gen_tmachine.py`,
+  `scripts/gen_tulib.py`) produisent du F* commité ; ils ne contiennent aucune logique de test.
+- Chaque entrée d'un test passe par un effet (`TUtil.blur`) : Custard évalue les termes clos ; `scripts/ftests.sh` refuse un `check true`
+  résiduel (VIDE). Pas de `|| true` ni de condition vide : une opération dont aucun cas ne s'exécute fait échouer le test (`nonvacuous`).
+- Pas de conversion « entier machine → `int` » à l'exécution (`v` n'a pas de réalisation F#) : les références travaillent en `int` et
+  construisent les entiers machine par `uint_to_t` gardé. `/` et `%` seulement sur opérandes ≥ 0.
+- Les fonctions à précondition sont appelées derrière une garde exécutée (`if i < length l then index l i`), F* en déduit la précondition.
+- **Double oracle** (`ftests/ulib_cases.py` → `TUlib.fst`) : un prédicat total `c_N` est PROUVÉ par `assert_norm` (sémantique du normaliseur
+  de F*) puis évalué à l'exécution sur les mêmes valeurs passées par `blur`. Les fonctions sans définition réductible (Seq, OrdSet, FiniteSet,
+  Float, `to_string` des entiers machine, `Class.Ord.Raw`) sont marquées `nonorm` : les attendus viennent alors du contrat de l'interface.
+- Un écart entre F* et le F# extrait n'est jamais « corrigé » dans le test : il devient un cas `docs/matrix/MxNN` (statut attendu dans
+  `EXPECTED.tsv`, avec un lemme `sem` qui PROUVE la valeur de F*), et le test de la suite l'exclut avec un renvoi vers ce cas.
+- Un module de test qui dépend d'un autre doit être vérifié **comme racine** dans l'ordre des dépendances (`ftests/ORDER`) : seule une racine
+  voit son `.checked` écrit ; vérifier seulement `TMain` re-vérifie tout en mémoire et fait échouer l'extraction (`Error 317`).
+- `--warn_error` suit la syntaxe OCaml : `-321-272` (et non `-321,-272`). Dans un commentaire F*, `F*)` ferme le commentaire.

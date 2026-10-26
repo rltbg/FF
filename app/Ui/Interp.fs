@@ -18,7 +18,9 @@ type internal InputState = { mutable InputTag: obj; mutable Last: string }
 type Interp(dispatch: obj -> unit,
             onInput: obj -> string -> unit,
             onSelect: uint32 -> unit,
-            onText: uint32 -> string -> unit) =
+            onHash: uint32 -> unit,
+            item: uint32 -> int -> string,
+            indexOf: uint32 -> string -> int) =
   /// vrai pendant que l'interpréteur modifie lui-même des propriétés : on ignore alors les événements
   let mutable patching = false
   let mutable current : (Node * Control) option = None
@@ -59,20 +61,21 @@ type Interp(dispatch: obj -> unit,
             st.Last <- t
             onInput st.InputTag t)
       tb :> Control
-    | BigList (rows, selected) ->
-      let lb = ListBox(Height = 220.0, Width = 360.0, ItemsSource = LazyRows(int rows, BigData.row, BigData.rowIndex), Tag = box rows)
+    | BigList (src, rows, selected) ->
+      let lb = ListBox(Height = 220.0, Width = 360.0, Tag = box (src, rows),
+                       ItemsSource = LazyRows(int rows, item src, indexOf src))
       if selected >= 0L then lb.SelectedIndex <- int selected
       lb.SelectionChanged.Add(fun _ ->
         if not patching && lb.SelectedIndex >= 0 then onSelect (uint32 lb.SelectedIndex))
       lb :> Control
-    | BigText id ->
+    | BigText (src, lines) ->
       // visualiseur de lignes virtualisé (lecture seule) : un TextBox de 1 Mo coûte ~170 Mo de RSS (mesuré).
-      // Le texte complet n'est jamais copié dans le modèle F* : il est construit et fourni à F* par le bouton.
-      let lines = ListBox(Height = 110.0, Width = 360.0, ItemsSource = LazyRows(BigData.textLines, BigData.line, BigData.lineIndex))
-      let b = Button(Content = "Hacher le texte (F*)", Tag = box id)
-      b.Click.Add(fun _ -> onText (unbox<uint32> b.Tag) BigData.text.Value)
+      // Le texte complet n'existe jamais côté hôte : F* le génère et le hache quand on appuie sur le bouton.
+      let view = ListBox(Height = 110.0, Width = 360.0, ItemsSource = LazyRows(int lines, item src, indexOf src))
+      let b = Button(Content = "Hacher le texte (F*)", Tag = box src)
+      b.Click.Add(fun _ -> onHash (unbox<uint32> b.Tag))
       let p = StackPanel(Spacing = 8.0)
-      p.Children.Add lines
+      p.Children.Add view
       p.Children.Add b
       p :> Control
 
@@ -111,15 +114,15 @@ type Interp(dispatch: obj -> unit,
           st.Last <- value
           tb.Text <- value
         tb :> Control
-      | _, BigList (rows, selected), (:? ListBox as lb) ->
-        if unbox<uint32> lb.Tag <> rows then
-          lb.ItemsSource <- LazyRows(int rows, BigData.row, BigData.rowIndex)
-          lb.Tag <- box rows
+      | _, BigList (src, rows, selected), (:? ListBox as lb) ->
+        if unbox<uint32 * uint32> lb.Tag <> (src, rows) then
+          lb.ItemsSource <- LazyRows(int rows, item src, indexOf src)
+          lb.Tag <- box (src, rows)
         let want = if selected >= 0L then int selected else -1
         if lb.SelectedIndex <> want then lb.SelectedIndex <- want
         lb :> Control
-      | _, BigText id, (:? Panel as p) ->
-        (p.Children.[1] :?> Button).Tag <- box id
+      | _, BigText (src, _), (:? Panel as p) ->
+        (p.Children.[1] :?> Button).Tag <- box src
         p :> Control
       | _ -> build n
 

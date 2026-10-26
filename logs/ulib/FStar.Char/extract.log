@@ -1,0 +1,10 @@
+* Error 395:
+  - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and
+    has no F# realization.
+  - Its declaration says what shape the type has, but not what it is: the
+    definition is in ulib/ml, and there is no F# counterpart of that library
+    (section 122.9).
+  - Extract this program with --codegen OCaml, or keep it to the fragment the C
+    backend compiles.
+
+1 error was reported (see above)

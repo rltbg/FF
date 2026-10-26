@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Tactics.TypeRepr.fst(34,0-38,17):
+  - While registering plugin `FStar.Tactics.TypeRepr.generate_repr_typ':
+
+* Error 385:
+  - Custard needs module FStarC.Syntax.Embeddings.Base, but no usable checked
+    file for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

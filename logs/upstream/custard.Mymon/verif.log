@@ -1,0 +1,7 @@
+* Warning 337 at /home/user/ff/.tools/src/FStar/tests/custard/Mymon.fst(6,86-6,87):
+  - The operator '@' has been resolved to FStar.List.Tot.append even though
+    FStar.List.Tot is not in scope. Please add an 'open FStar.List.Tot' to stop
+    relying on this deprecated, special treatment of '@'.
+
+Verified module: Mymon
+All verification conditions discharged successfully

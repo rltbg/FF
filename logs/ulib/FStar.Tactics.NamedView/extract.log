@@ -1,0 +1,9 @@
+* Error 238 at /home/user/ff/.tools/fstar/lib/fstar/ulib/FStar.Tactics.NamedView.fst(48,0-51,22):
+  - While registering plugin `FStar.Tactics.NamedView.inspect_universe':
+
+* Error 385:
+  - Custard needs module FStarC.Syntax.Embeddings.Base, but no usable checked
+    file for it is in the dependency graph.
+  - Verify the module first, or pass --already_cached appropriately.
+
+2 errors were reported (see above)

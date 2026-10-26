@@ -1,0 +1,11 @@
+/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fs(8,6): error FS0035: This construct is deprecated: This type abbreviation has one or more declared type parameters that do not appear in the type being abbreviated. Type abbreviations must use all declared type parameters in the type being abbreviated. Consider removing one or more type parameters, or use a concrete type definition that wraps an underlying type, such as 'type C<'a> = C of ...'. [/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fsproj]
+/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fs(10,6): error FS0035: This construct is deprecated: This type abbreviation has one or more declared type parameters that do not appear in the type being abbreviated. Type abbreviations must use all declared type parameters in the type being abbreviated. Consider removing one or more type parameters, or use a concrete type definition that wraps an underlying type, such as 'type C<'a> = C of ...'. [/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fsproj]
+
+Build FAILED.
+
+/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fs(8,6): error FS0035: This construct is deprecated: This type abbreviation has one or more declared type parameters that do not appear in the type being abbreviated. Type abbreviations must use all declared type parameters in the type being abbreviated. Consider removing one or more type parameters, or use a concrete type definition that wraps an underlying type, such as 'type C<'a> = C of ...'. [/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fsproj]
+/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fs(10,6): error FS0035: This construct is deprecated: This type abbreviation has one or more declared type parameters that do not appear in the type being abbreviated. Type abbreviations must use all declared type parameters in the type being abbreviated. Consider removing one or more type parameters, or use a concrete type definition that wraps an underlying type, such as 'type C<'a> = C of ...'. [/home/user/ff/logs/ulib/FStar.Sequence.Permutation/o/FStar.Sequence.Permutation.fsproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:05.19

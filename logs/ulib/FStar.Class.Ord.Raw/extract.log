@@ -1,0 +1,11 @@
+* Error 364:
+  - The argument passed to the monomorphized binder number 0 of
+    FStar.Class.Ord.Raw.sort is the runtime parameter a, so there is nothing to
+    specialize on.
+  - Mark a with [@@monomorphize] in the enclosing definition so that it, too, is
+    known at specialization time, or drop the annotation on binder 0 and pass it
+    at runtime.
+  - Reached through:
+  -   FStar.Class.Ord.Raw.sort_by
+
+1 error was reported (see above)

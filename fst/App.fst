@@ -17,8 +17,8 @@ type msg =
   | AddItem | Remove of U32.t | Toggle of U32.t | ClearChecked
   | Typed of input_tag & string
   | Submit
-  | Select of U32.t              (* ligne choisie dans la grande liste (donnée côté hôte) *)
-  | HashText of U32.t & string   (* texte volumineux fourni par l'hôte : on ne garde que son condensé *)
+  | Select of U32.t              (* ligne choisie dans la grande liste (source Big.src_rows) *)
+  | HashText of U32.t            (* hacher le texte volumineux de cette source (généré par Big) : on ne garde que son condensé *)
 
 type form_status =
   | Editing
@@ -27,7 +27,7 @@ type form_status =
 
 (* Grands volumes : les données (100 000 lignes, texte de 1 Mo) vivent côté hôte ; le modèle F* ne garde que
    des identifiants et un condensé. *)
-let big_rows : U32.t = 100000ul
+let big_rows : U32.t = 100000ul   (* = Big.rows_count *)
 let big_max_text : nat = 4000000   (* garde : taille maximale acceptée pour HashText (en unités UTF-16) *)
 
 type digest = { text_id: U32.t; len: U32.t; fnv: U32.t }
@@ -138,7 +138,8 @@ let update (m:model{inv m}) (g:msg) : (m':model{inv m'}) =
   | Typed (InAge, s)  -> { m with age = s; status = Editing }
   | Submit -> { m with status = submit_form m.name m.age }
   | Select i -> if U32.lt i big_rows then { m with sel = Some i } else m
-  | HashText (id, s) ->
+  | HashText id ->
+    let s = Big.text_of id in
     let n = Str.length s in
     if n <= big_max_text then begin
       Core.lemma_len_maxlen s;
@@ -176,8 +177,8 @@ type view_tree =
   | VButton of string & msg
   | VInput of input_tag & string & string        (* tag, valeur, indication *)
   | VCheck of string & bool & msg
-  | VBigList of U32.t & option U32.t   (* nombre de lignes (données côté hôte), ligne sélectionnée *)
-  | VBigText of U32.t                  (* texte volumineux côté hôte, identifié par un entier *)
+  | VBigList of U32.t & U32.t & option U32.t   (* source Big, nombre de lignes, ligne sélectionnée : lignes demandées à la source *)
+  | VBigText of U32.t & U32.t                  (* source Big d'un texte volumineux, nombre de lignes affichées *)
 
 let item_row (x:item) : view_tree =
   VRow [ VCheck (x.text, x.checked, Toggle x.id); VButton ("✕", Remove x.id) ]
@@ -224,8 +225,8 @@ let view_big (m:model) : view_tree =
                 ^ U32.to_string d.fnv in
   VColumn [ VHeading "Gros volumes";
             VText sel_txt;
-            VBigList (big_rows, m.sel);
-            VBigText 1ul;
+            VBigList (Big.src_rows, big_rows, m.sel);
+            VBigText (Big.src_text, U32.uint_to_t Big.text_lines);
             VText dig_txt ]
 
 let view (m:model) : view_tree =
@@ -241,7 +242,7 @@ let msg_of_input (t:input_tag) (s:string) : msg = Typed (t, s)
 
 (* fabriques de messages pour l'hôte (il ne construit jamais un msg lui-même) *)
 let msg_of_select (i:U32.t) : msg = Select i
-let msg_of_text (id:U32.t) (s:string) : msg = HashText (id, s)
+let msg_of_hash (id:U32.t) : msg = HashText id
 
 (* ---------- lemmes des grands volumes ---------- *)
 let lemma_select (m:model{inv m}) (i:U32.t)
@@ -252,11 +253,43 @@ let lemma_select_out_of_range (m:model{inv m}) (i:U32.t{U32.v i >= U32.v big_row
   : Lemma (update m (Select i) == m)
   = ()
 
-(* HashText : le condensé est exactement (longueur, FNV-1a de l'UTF-8) du texte fourni, et seulement s'il n'est pas trop long. *)
-let lemma_hash_text (m:model{inv m}) (id:U32.t) (s:string)
-  : Lemma (let n = Str.length s in
+(* HashText : le condensé est exactement (longueur, FNV-1a de l'UTF-8) du texte généré par Big, et seulement s'il n'est pas trop long. *)
+let lemma_hash_text (m:model{inv m}) (id:U32.t)
+  : Lemma (let s = Big.text_of id in
+           let n = Str.length s in
            if n <= big_max_text
-           then (update m (HashText (id, s))).digest ==
+           then (update m (HashText id)).digest ==
                   Some ({ text_id = id; len = U32.uint_to_t n; fnv = Core.fnv_utf8 s })
-           else update m (HashText (id, s)) == m)
-  = if Str.length s <= big_max_text then Core.lemma_len_maxlen s
+           else update m (HashText id) == m)
+  = if Str.length (Big.text_of id) <= big_max_text then Core.lemma_len_maxlen (Big.text_of id)
+
+(* Les deux constantes du nombre de lignes de la grande liste coïncident. *)
+let lemma_big_rows () : Lemma (U32.v big_rows == Big.rows_count) = assert_norm (U32.v big_rows == Big.rows_count)
+
+(* ---------- journal de test et préchargement : produits par F* (l'hôte ne formate rien) ---------- *)
+let show_tab (t:tab) : string =
+  match t with TCounter -> "counter" | TItems -> "items" | TForm -> "form" | TBig -> "big"
+
+let show_item (x:item) : string = x.text ^ (if x.checked then "[x]" else "[ ]")
+
+let show_status (s:form_status) : string =
+  match s with
+  | Editing -> "editing"
+  | Rejected es -> "rejected:" ^ Str.concat "|" es
+  | Accepted (n, a, h) -> "accepted:" ^ n ^ "," ^ U32.to_string a ^ "," ^ U32.to_string h
+
+(* Résumé du modèle sur une ligne (MVU_TRACE) : c'est ce que lisent les tests de fumée de l'interface. *)
+let show_model (m:model) : string =
+  "tab=" ^ show_tab m.tab ^ " counter=" ^ I32.to_string m.counter
+  ^ " items=" ^ Str.concat "," (map show_item m.items) ^ " draft=" ^ m.draft
+  ^ " name=" ^ m.name ^ " age=" ^ m.age ^ " status=" ^ show_status m.status
+  ^ " sel=" ^ (match m.sel with Some i -> U32.to_string i | None -> "-")
+  ^ " digest=" ^ (match m.digest with
+                  | Some d -> U32.to_string d.text_id ^ "," ^ U32.to_string d.len ^ "," ^ U32.to_string d.fnv
+                  | None -> "-")
+
+(* Messages qui ajoutent n éléments « item 1 » .. « item n » (test de charge : MVU_PRELOAD=n), dans cet ordre. *)
+let rec preload_acc (n:nat) (acc:list msg) : Tot (list msg) (decreases n) =
+  if n = 0 then acc
+  else preload_acc (n - 1) (Typed (InNew, "item " ^ string_of_int n) :: AddItem :: acc)
+let preload_msgs (n:nat) : list msg = preload_acc n []
