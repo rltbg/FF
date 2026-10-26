@@ -11,6 +11,11 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <ProvisioningType>manual</ProvisioningType>
     <RootNamespace>HostIOS</RootNamespace>
+    <!-- CONTOURNEMENT « inévitable » (défaut de l'outil, pas de notre code) : sans lui, la CI échoue (run 40362696619, .NET for iOS 26.0.11017, Xcode 26.0.1,
+         FSharp.Core 10.1.403) : « Xamarin.Shared.Sdk.targets(1032,3): error : ILStrip failed for obj/Release/net10.0-ios/iossimulator-arm64/linked/FSharp.Core.dll:
+         Object reference not set to an instance of an object ». Même message dans fabulous-dev/Fabulous#1355, qui cite ce contournement (cause exacte non confirmée).
+         Coût : les assemblies gardent leur IL (application plus grosse). -->
+    <EnableAssemblyILStripping>false</EnableAssemblyILStripping>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Main.fs" />
