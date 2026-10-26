@@ -1,0 +1,51 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+  Determining projects to restore...
+  Restored /home/user/w/proj/app/HostStatic/HostStatic.fsproj (in 390 ms).
+  2 of 3 projects are up-to-date for restore.
+  Ui -> /home/user/w/proj/app/Ui/bin/Debug/net10.0/Ui.dll
+  Extracted -> /home/user/w/proj/app/Extracted/bin/Debug/net10.0/Extracted.dll
+  HostStatic -> /home/user/w/proj/app/HostStatic/bin/Debug/net10.0/HostStatic.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:08.39
+dotnet watch ⌚ Loading projects ...
+dotnet watch ⌚ Loaded 3 project(s) in 0.8s.
+dotnet watch ⌚ Waiting for changes
+dotnet watch ⌚ File updated: ./Extracted/Extracted.fs
+dotnet watch 🔥 Restart is needed to apply the changes.
+dotnet watch ⌚ [HostStatic (net10.0)] Exited
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Ui -> /home/user/w/proj/app/Ui/bin/Debug/net10.0/Ui.dll
+  Extracted -> /home/user/w/proj/app/Extracted/bin/Debug/net10.0/Extracted.dll
+  HostStatic -> /home/user/w/proj/app/HostStatic/bin/Debug/net10.0/HostStatic.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.15
+dotnet watch ⌚ Loading projects ...
+dotnet watch ⌚ Loaded 3 project(s) in 0.3s.
+dotnet watch ⌚ Waiting for changes
+dotnet watch ⌚ File updated: ./Ui/Interp.fs
+dotnet watch 🔥 Restart is needed to apply the changes.
+dotnet watch ⌚ [HostStatic (net10.0)] Exited
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Extracted -> /home/user/w/proj/app/Extracted/bin/Debug/net10.0/Extracted.dll
+  Ui -> /home/user/w/proj/app/Ui/bin/Debug/net10.0/Ui.dll
+  HostStatic -> /home/user/w/proj/app/HostStatic/bin/Debug/net10.0/HostStatic.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.96
+dotnet watch ⌚ Loading projects ...
+dotnet watch ⌚ Loaded 3 project(s) in 0.2s.
+dotnet watch ⌚ Waiting for changes
