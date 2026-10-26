@@ -8,18 +8,25 @@ open Avalonia.Themes.Fluent
 
 type UiApp() =
   inherit Application()
+  /// Bureau (Windows, macOS, Linux) : la fenêtre est créée ici, le callback de StartWithClassicDesktopLifetime s'exécute
+  /// avant l'initialisation de la plateforme (doc : "modify the lifetime before application started").
   static member val OnReady : IClassicDesktopStyleApplicationLifetime -> unit = ignore with get, set
+  /// Plateformes à vue unique (Android, iOS, navigateur) : fabrique de la vue principale (voir Shell.fs).
+  static member val MainView : unit -> Control = (fun () -> null) with get, set
   override this.Initialize() = this.Styles.Add(FluentTheme())
-  // La fenêtre est créée ici : le callback de StartWithClassicDesktopLifetime s'exécute avant
-  // l'initialisation de la plateforme (doc : "modify the lifetime before application started").
   override this.OnFrameworkInitializationCompleted() =
+    // Ordre : Android implémente à la fois IActivityApplicationLifetime et ISingleViewApplicationLifetime
+    // (MainView « n'y est pas pleinement supporté », source Avalonia.Android/ApplicationLifetime.cs) : la fabrique d'abord.
     match this.ApplicationLifetime with
     | :? IClassicDesktopStyleApplicationLifetime as lt -> UiApp.OnReady lt
+    | :? IActivityApplicationLifetime as a -> a.MainViewFactory <- Func<Control>(fun () -> UiApp.MainView ())
+    | :? ISingleViewApplicationLifetime as v -> v.MainView <- UiApp.MainView ()
     | _ -> ()
     base.OnFrameworkInitializationCompleted()
 
 /// Boucle MVU : un modèle opaque et un cœur interchangeable (rechargement à chaud).
-type Runner(initial: CoreApi, window: Window) as this =
+/// `root` : une Window (bureau) ou la vue principale (Android, iOS, navigateur) : tout ContentControl.
+type Runner(initial: CoreApi, root: ContentControl) as this =
   let mutable api = initial
   let mutable model = initial.Init
   let holder = ScrollViewer()
@@ -52,7 +59,7 @@ type Runner(initial: CoreApi, window: Window) as this =
 
   do
     holder.Content <- host
-    window.Content <- holder
+    root.Content <- holder
 
   /// Appelé après chaque rendu avec le modèle (journal de test).
   member val OnRender : obj -> unit = ignore with get, set
@@ -73,17 +80,3 @@ type Runner(initial: CoreApi, window: Window) as this =
     model <- newModel
     interp.Reset()
     render ()
-
-module Startup =
-  /// Configuration documentée Avalonia 12 : UsePlatformDetect (plateforme + Skia + HarfBuzz).
-  /// MVU_SOFTWARE_RENDERING=1 force le rendu X11 logiciel (par défaut : modes de la plateforme, avec repli).
-  let run (argv: string[]) (onReady: IClassicDesktopStyleApplicationLifetime -> unit) : int =
-    UiApp.OnReady <- onReady
-    let b = AppBuilder.Configure<UiApp>().UsePlatformDetect()
-    let b =
-      if Environment.GetEnvironmentVariable "MVU_SOFTWARE_RENDERING" = "1" then
-        b.With(X11PlatformOptions(RenderingMode = [| X11RenderingMode.Software |]))
-      else b
-    b.StartWithClassicDesktopLifetime(argv)
-
-  let newWindow () = Window(Title = "F* MVU", Width = 520.0, Height = 560.0)

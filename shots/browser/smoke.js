@@ -1,0 +1,20 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const p = await b.newPage({ viewport: { width: 520, height: 600 } });
+  const errs = [];
+  p.on('pageerror', e => errs.push(e.message));
+  p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  await p.goto('http://localhost:29859/index.html');
+  await p.waitForSelector('canvas', { timeout: 60000 });
+  await p.waitForTimeout(8000);
+  const a = await p.screenshot({ path: '/home/user/ff/shots/browser/0_init.png' });
+  await p.mouse.click(64, 127); await p.waitForTimeout(500); await p.mouse.click(64, 127); await p.waitForTimeout(1000);
+  const c = await p.screenshot({ path: '/home/user/ff/shots/browser/1_apres_clics.png' });
+  const fs = require('fs'); const crypto = require('crypto');
+  const h = x => crypto.createHash('sha1').update(x).digest('hex');
+  console.log('canvas=1 erreurs=' + errs.length + (errs.length ? ' : ' + errs.slice(0, 3).join(' | ') : ''));
+  console.log(h(a) !== h(c) ? 'image modifiée par les clics : OK' : 'image IDENTIQUE après les clics : KO');
+  await b.close();
+  process.exit(errs.length === 0 && h(a) !== h(c) ? 0 : 1);
+})();

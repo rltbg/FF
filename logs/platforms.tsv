@@ -1,0 +1,3 @@
+win-x64	JIT	BUILT	207M ; 9 bibliothèques natives (Skia/HarfBuzz…)
+osx-arm64	JIT	BUILT	114M ; 7 bibliothèques natives (Skia/HarfBuzz…)
+linux-arm64	JIT	BUILT	110M ; 6 bibliothèques natives (Skia/HarfBuzz…)

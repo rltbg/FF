@@ -40,6 +40,10 @@ Avant d'écrire ou de modifier du code qui s'appuie sur F*, Custard, Avalonia ou
   dans le code AOT (réflexion).
 - Custard : `sprintf` avec un argument entier machine (`%y %i %l %L %uy…`) s'exécute en `failwith "Prims.admit"`, même flouté (Mx46) ; `Class.Printable.to_string` sur une liste ou un `Some` boucle à l'infini (Mx40) ; `RBMap.for_any` est faux
   dans ulib (Mx42) ; `String.lowercase/uppercase` ne touche que l'ASCII dans F* mais Unicode en .NET (Mx36).
+- Plateformes : `Ui` ne dépend QUE d'Avalonia (noyau) ; le bureau (`Avalonia.Desktop`) est dans `UiDesktop`, la colle commune dans `Shell` ; les têtes
+  (`HostStatic` bureau, `HostBrowser`, `HostAndroid`, `HostIOS`) sont minces. Un `open Avalonia.Controls` masque les cas `Button`/`Text` de `Node`.
+  NativeAOT ne cross-compile pas entre OS : publier en JIT autonome pour les autres RID. L'installeur du SDK Android exige `USER` non vide
+  (`XAIAD7009`) et l'acceptation de ses licences (`ACCEPT_ANDROID_LICENSES=1`, décision de l'utilisateur, jamais par défaut).
 - Shell : ne pas utiliser `pkill -f <motif>` quand le motif figure dans sa propre ligne de commande (cela tue le shell).
 
 ## 4. Tests : **uniquement du F\***, jamais de F# (décision de l'utilisateur)

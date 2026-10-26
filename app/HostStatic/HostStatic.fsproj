@@ -11,7 +11,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Ui/Ui.fsproj" />
-    <ProjectReference Include="../Extracted/Extracted.fsproj" />
+    <ProjectReference Include="../Shell/Shell.fsproj" />
+    <ProjectReference Include="../UiDesktop/UiDesktop.fsproj" />
   </ItemGroup>
 </Project>

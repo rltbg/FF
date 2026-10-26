@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Colle commune à TOUTES les têtes (bureau, Android, iOS, navigateur) : arbre de vue F* → Node, API du cœur, vue principale.
+       Aucune dépendance à une plateforme : seulement Avalonia (noyau), Ui et le F# extrait. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Shell.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ui/Ui.fsproj" />
+    <ProjectReference Include="../Extracted/Extracted.fsproj" />
+  </ItemGroup>
+</Project>

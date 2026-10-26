@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Ui/Ui.fsproj" />
+    <ProjectReference Include="../UiDesktop/UiDesktop.fsproj" />
   </ItemGroup>
 </Project>

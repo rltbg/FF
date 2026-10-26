@@ -106,6 +106,8 @@ Ce que les preuves **ne** couvrent **pas** (les tests les gardent) : les constan
 
 ## 5. L'hôte (F# écrit à la main)
 
+Plusieurs **têtes** (bureau, navigateur, Android, iOS) partagent `Ui` et `Shell` : voir `docs/PLATEFORMES.md`. Ce qui suit décrit `Ui` et la tête bureau.
+
 - `app/Ui/Node.fs` : type `Node` (indépendant de F* et d'Avalonia), `CoreApi` (les 8 fonctions que l'hôte connaît du cœur : `Init`, `Update`, `View`,
   `MsgOfInput`, `MsgOfSelect`, `MsgOfHash`, `BigItem`, `BigIndex` — les deux dernières appellent `Big.item`/`Big.index_of`).
 - `app/Ui/Interp.fs` : interpréteur `Node → contrôles` **avec réconciliation** : l'arbre précédent est comparé position par
@@ -115,7 +117,7 @@ Ce que les preuves **ne** couvrent **pas** (les tests les gardent) : les constan
 - `app/Ui/Runner.fs` : boucle MVU, `UiApp`, `Startup.run` (`UsePlatformDetect`, `MVU_SOFTWARE_RENDERING=1` force le rendu X11
   logiciel, `MVU_TRACE=<fichier>` journalise le modèle après chaque rendu). **Panneau hôte stable** dans le `ScrollViewer`
   (contournement d'un défaut d'Avalonia 12.1.4, voir `TODO-avalonia-upstream.md`).
-- `app/HostStatic` : lie `Extracted` statiquement ; seule colle : `toNode` (arbre de vue F* → `Node`) ; journal et préchargement viennent de F*.
+- `app/Shell` : `toNode` (arbre de vue F* → `Node`), `api`, `useSingleView` ; journal et préchargement viennent de F*. `app/UiDesktop` : `Startup` (`Avalonia.Desktop`). `app/HostStatic` : tête bureau (≈ 12 lignes).
 - `app/HostDev` : charge `Extracted.dll` dans un `AssemblyLoadContext` collectible, transfère le modèle par copie
   structurelle (`Reload.transplant`), surveille le fichier (sondage 200 ms : `FileSystemWatcher` ne voyait pas les réécritures
   de MSBuild dans le conteneur), mesure le déchargement. Réflexion : **dev uniquement, non AOT**.

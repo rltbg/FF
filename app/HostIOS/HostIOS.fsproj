@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tête iOS (vue unique, ISingleViewApplicationLifetime). NON COMPILÉE ICI : exige macOS + Xcode + le workload « ios »
+       (indisponible sous Linux : `dotnet workload search ios` ne renvoie rien). Écrite d'après samples/ControlCatalog.iOS d'Avalonia 12.1.4.
+       Build sur Mac : scripts/platforms.sh ios -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ProvisioningType>manual</ProvisioningType>
+    <RootNamespace>HostIOS</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Main.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shell/Shell.fsproj" />
+    <PackageReference Include="Avalonia.iOS" Version="12.1.4" />
+  </ItemGroup>
+</Project>

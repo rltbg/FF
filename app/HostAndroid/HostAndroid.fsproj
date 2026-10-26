@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tête ANDROID (vue unique, IActivityApplicationLifetime). Build : scripts/platforms.sh android (JDK + SDK Android requis). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ApplicationId>net.fstar.mvu</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Android.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shell/Shell.fsproj" />
+    <PackageReference Include="Avalonia.Android" Version="12.1.4" />
+  </ItemGroup>
+</Project>

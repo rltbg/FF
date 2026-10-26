@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!-- Tête NAVIGATEUR (WebAssembly). Vue unique : Shell.useSingleView. Build : scripts/platforms.sh browser. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-browser</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmBuildNative>true</WasmBuildNative>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shell/Shell.fsproj" />
+    <PackageReference Include="Avalonia.Browser" Version="12.1.4" />
+  </ItemGroup>
+</Project>

@@ -13,11 +13,11 @@ echo "== Code livré (écrit à la main)"
 core=$(useful_fst fst/Core.fst fst/Big.fst fst/App.fst)
 cnt "F* : Core + Big + App (logique, preuves, vue, données)" "$core"
 cnt "  dont Core.fst" "$(useful_fst fst/Core.fst)"; cnt "  dont Big.fst" "$(useful_fst fst/Big.fst)"; cnt "  dont App.fst" "$(useful_fst fst/App.fst)"
-ui=$(useful_fs app/Ui/*.fs); hs=$(useful_fs app/HostStatic/*.fs); hd=$(useful_fs app/HostDev/*.fs)
-cnt "F# à la main : Ui (interpréteur Avalonia, boucle MVU)" "$ui"
-cnt "F# à la main : HostStatic (point d'entrée JIT/AOT)" "$hs"
+ui=$(useful_fs app/Ui/*.fs app/Shell/*.fs app/UiDesktop/*.fs); hs=$(useful_fs app/HostStatic/*.fs app/HostBrowser/*.fs app/HostAndroid/*.fs app/HostIOS/*.fs); hd=$(useful_fs app/HostDev/*.fs)
+cnt "F# à la main : Ui + Shell + UiDesktop (interpréteur, boucle MVU, colle)" "$ui"
+cnt "F# à la main : têtes bureau, navigateur, Android, iOS" "$hs"
 cnt "F# à la main : HostDev (rechargement à chaud, dev seulement)" "$hd"
-liv=$((ui + hs)); cnt "F# à la main livré (Ui + HostStatic)" "$liv"
+liv=$((ui + hs)); cnt "F# à la main livré (Ui + Shell + UiDesktop + têtes)" "$liv"
 awk -v f="$core" -v s="$liv" 'BEGIN{printf "%-58s %5.0f %%\n", "Part de F* dans le code livré écrit à la main", 100*f/(f+s)}'
 echo "== F# généré (non écrit à la main)"
 cnt "Extracted.fs (F* extrait)" "$(useful_fs app/Extracted/Extracted.fs)"; cnt "FStarCustard.fs (bibliothèque de support générée)" "$(useful_fs app/Extracted/FStarCustard.fs)"

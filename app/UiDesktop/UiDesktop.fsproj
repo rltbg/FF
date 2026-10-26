@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Démarrage BUREAU (Windows, macOS, Linux) : seule dépendance à Avalonia.Desktop (plateforme + Skia + HarfBuzz + X11/Win32/Native). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Startup.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ui/Ui.fsproj" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+  </ItemGroup>
+</Project>

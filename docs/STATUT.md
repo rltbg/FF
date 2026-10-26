@@ -17,6 +17,7 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 | Modes sans preuves | `--lax` et `--admit_smt_queries true` testés (`logs/loop_bench.log`) : vérification de 1,0 à 1,8 s au lieu de 2,7 à 4,9 s ; la compilation F# (≈ 5 s) domine la boucle dans les trois modes | `scripts/loop.sh`, `scripts/loop_bench.sh` |
 | Gros volumes | liste de 100 000 lignes virtualisée (côté hôte), texte de 1 022 080 octets haché par la fonction F* prouvée, coût mesuré du modèle F* à 100 000 éléments | `docs/GUIDE.md` §7 |
 | Sous-ensemble F* extractible | 46 cas (matrice : 25 OK, 6 EXTRACT, 1 BUILD, 13 RUN attendus) ; tests amont : 33 OK, 3 EXTRACT ; balayage d'ulib : 61 OK, 69 vides, 84 EXTRACT, 7 BUILD (chaînes, listes, Seq/Map/Set, entiers machine, Bytes, Printf, Float64…), passage à l'échelle | `docs/MATRICE-FSTAR.md` |
+| Multi-plateformes | construction : Windows/macOS/Linux × x64/arm64 (+ musl), NativeAOT Linux x64, navigateur (WebAssembly, **exécuté** dans Chromium), Android (APK signé) ; iOS : projet écrit, non compilable ici | `docs/PLATEFORMES.md`, `scripts/platforms.sh` |
 | Défauts de F* documentés | 14 constats avec reproduction et correctif proposé | `docs/UPSTREAM-FSTAR.md` |
 | Défaut d'Avalonia | cause trouvée dans le code source, contournement en place, note pour le remonter | `REPORT.md` §5, `docs/TODO-avalonia-upstream.md` |
 
@@ -47,8 +48,8 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 | Sujet | Pourquoi |
 |---|---|
 | Rendu **GPU** (GLX/EGL/Vulkan, Wayland) | aucune carte graphique ; sous Xvfb Avalonia utilise Mesa en rastérisation logicielle ; les temps et la mémoire ne valent pas pour un GPU |
-| **Windows, macOS** | aucun accès ; aucune des mesures n'est transposable (autre backend de fenêtrage, autre AOT) |
-| **Mobile** (Android, iOS) | aucun accès |
+| **Windows, macOS** (lancement) | aucun accès ; les binaires se **construisent** (publication croisée) mais n'ont jamais été lancés ; aucune mesure n'est transposable |
+| **Android, iOS** (lancement) | APK construit, jamais installé (pas d'émulateur) ; iOS jamais compilé (macOS + Xcode requis) |
 | Taux de rafraîchissement, fluidité de défilement | pas de capture vidéo ni de mesure d'images par seconde |
 | **Intégration continue** | décision de l'utilisateur : **pas de GitHub Actions**. `scripts/all.sh` est la passe complète, exécutable par n'importe quel outil si besoin |
 | `make fsharp-test` du dépôt F* | demande de reconstruire F* ; non lancé |
