@@ -19,6 +19,26 @@ Workflow : `.github/workflows/build.yml`.
 
 Durée de bout en bout : 7 min 6 s. Trois correctifs ont été nécessaires (Xcode 26.0.1, IL stripping iOS, NDK r27 Android : voir « Limites connues »). **Ce que la CI ne prouve pas** : aucun binaire n'est lancé (ni bureau, ni navigateur, ni APK sur appareil, ni app iOS sur simulateur) ; l'efficacité des caches n'a pas été mesurée (l'API des caches n'est pas accessible depuis ce conteneur).
 
+## Sorties : un fichier par plateforme, téléchargeable directement
+
+Chaque job envoie **un seul fichier** avec `actions/upload-artifact@v7` en `archive: false` (pas de zip supplémentaire autour : on télécharge le fichier lui-même, depuis la page du run, onglet *Artifacts*). Vérifiés par le run 40370127417 (tous) et 40370843903 (iOS) :
+
+| Fichier | Contenu | Vérifié par la CI |
+|---|---|---|
+| `fstar-mvu-linux-x64.tar.gz`, `…-linux-arm64.tar.gz` | exécutable NativeAOT + `libSkiaSharp.so` + `libHarfBuzzSharp.so` | `ldd` (voir limite ci-dessous) |
+| `fstar-mvu-win-x64.zip`, `…-win-arm64.zip` | exécutable NativeAOT + DLL natives | publication réussie |
+| `fstar-mvu-osx-arm64.app.zip`, `…-osx-x64.app.zip` | bundle **`FStarMVU.app`** (Info.plist, signature ad hoc) | `codesign --verify --deep --strict` : « valid on disk » ; exécutable Mach-O arm64 ; l'app arm64 **reste vivante 8 s au lancement** sur le runner |
+| `fstar-mvu-android-arm64.apk` | APK NativeAOT, signé (clé de débogage) | `apksigner verify` (schémas v2 et v3), `aapt2 dump badging` (paquet `net.fstar.mvu`, cible SDK 36, `native-code: arm64-v8a`), `libHostAndroid.so` présente (31,6 Mo), **aucun** Mono ni DLL, `zipalign` 16 Ko OK |
+| `fstar-mvu-ios-unsigned.ipa` | `Payload/HostIOS.app`, NativeAOT, arm64, **non signé** | Info.plist (`Avalonia.FStarMVU`, `iphoneos`, iOS ≥ 13.0), exécutable Mach-O 64 bits arm64 |
+| `fstar-mvu-wasm.zip` | `wwwroot` WebAssembly (Mono AOT partiel) à servir en HTTP | `dotnet.js` présent |
+
+**Installation.**
+- **macOS** : sans certificat « Developer ID », la signature est seulement ad hoc. Après téléchargement, macOS met l'app en quarantaine : clic droit > Ouvrir, ou `xattr -dr com.apple.quarantine FStarMVU.app`. Notarisation = compte Apple, non fait.
+- **iOS** : l'`.ipa` est **non signé** (aucun compte Apple dans la CI) : iOS le refuse tel quel. Il faut le re-signer avec un outil de sideloading (AltStore, Sideloadly, TrollStore) ou avec `codesign` + votre certificat et profil de provisionnement. Un `.ipa` directement installable exige ces éléments Apple, à fournir en secrets du dépôt : non fait.
+- **Android** : activer l'installation d'applications externes ; l'APK est signé avec la clé de débogage (pas une clé de publication).
+
+**Limite connue, décision en attente : les bibliothèques natives ne sont PAS liées dans l'exécutable.** Bureau : `HostStatic` + `libSkiaSharp` + `libHarfBuzzSharp` (+ `libAvaloniaNative.dylib` sur macOS) à côté (Linux x64 : `HostStatic` 20,7 Mo, `libSkiaSharp.so` 11,2 Mo, `libHarfBuzzSharp.so` 2,8 Mo). Android : les `.so` sont dans l'APK à côté de `libHostAndroid.so`. Les paquets officiels (SkiaSharp 3.119.4, HarfBuzzSharp) ne fournissent pas d'archives statiques pour le bureau. Piste trouvée : le paquet communautaire `Summpot.StaticAvalonia` 3.119.4-avalonia.12.1.4-r1 (même versions que nous ; archives `.a`/`.lib` pour win-x64/arm64, linux-x64/arm64, osx-x64/arm64 ; licence MIT ; ses cibles MSBuild sont lisibles : `DirectPInvoke` + `NativeLibrary`) ; binaires non officiels, 145 Mo, **non testés ici** (la session a refusé de les construire : binaires natifs tiers). `libAvaloniaNative.dylib` (macOS) n'est pas couvert par ce paquet ; Linux garde fontconfig/FreeType/glibc dynamiques (système).
+
 ## Déclenchement (pour ne gaspiller aucune minute)
 
 - **Jamais sur un simple push ni une pull request.** Seulement : lancement manuel (*Actions → build → Run workflow*, champ `targets` : `wasm`, `linux`, `windows`, `macos`, `android`, `ios`, une liste séparée par des virgules, ou `all`) et étiquette `v*` (tout).
