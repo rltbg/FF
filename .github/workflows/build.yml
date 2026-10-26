@@ -16,9 +16,10 @@ on:
 permissions:
   contents: read
 
-# une nouvelle exécution sur la même référence annule la précédente (pas de minutes gaspillées)
+# une nouvelle exécution sur la même référence ET les mêmes cibles annule la précédente (des cibles différentes ne s'annulent pas : sinon
+# lancer `wasm` puis `linux` à la suite tuerait le premier, sans enregistrer ses caches)
 concurrency:
-  group: build-${{ github.ref }}
+  group: build-${{ github.ref }}-${{ inputs.targets }}
   cancel-in-progress: true
 
 env:
