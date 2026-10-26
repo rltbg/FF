@@ -51,7 +51,7 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 | **Windows, macOS** (lancement) | aucun accès ; les binaires se **construisent** (publication croisée) mais n'ont jamais été lancés ; aucune mesure n'est transposable |
 | **Android, iOS** (lancement) | APK construit, jamais installé (pas d'émulateur) ; iOS jamais compilé (macOS + Xcode requis) |
 | Taux de rafraîchissement, fluidité de défilement | pas de capture vidéo ni de mesure d'images par seconde |
-| **Intégration continue** | décision de l'utilisateur : **pas de GitHub Actions**. `scripts/all.sh` est la passe complète, exécutable par n'importe quel outil si besoin |
+| **Intégration continue** | GitHub Actions **pour construire** toutes les plateformes (`.github/workflows/build.yml`, `docs/CI.md`) : écrit, syntaxe YAML vérifiée, **jamais exécuté**. Les tests restent `scripts/all.sh` |
 | `make fsharp-test` du dépôt F* | demande de reconstruire F* ; non lancé |
 
 ## Part de F* (`scripts/loc.sh`)

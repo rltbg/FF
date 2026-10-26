@@ -1,0 +1,201 @@
+# Construction multi-plateformes (voir docs/CI.md). Rien ne tourne automatiquement sur un push : déclenchement manuel
+# (Actions > build > Run workflow, avec le choix des cibles) ou étiquette `v*`. Le F# extrait (app/Extracted) est commité :
+# la CI n'installe NI F* NI Custard, seulement .NET, et ne récupère que le dossier app/ (≈ 200 Ko).
+name: build
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "Cibles, séparées par des virgules : wasm, linux, windows, macos, android, ios, ou all"
+        default: wasm
+      android_naot:
+        description: "Android : ajouter les APK NativeAOT (expérimental, NDK r27+)"
+        type: boolean
+        default: false
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+# une nouvelle exécution sur la même référence annule la précédente (pas de minutes gaspillées)
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: 10.0.403
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+# sur une étiquette `inputs` est vide : chaque job teste donc `event_name != 'workflow_dispatch'` pour tout construire
+jobs:
+  # ---------------------------------------------------------------- navigateur : une seule fois (le WebAssembly ne dépend pas de l'architecture)
+  wasm:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'wasm') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: app, fetch-depth: 1 }
+      - name: "dossier .NET (mis en cache avec ses workloads)"
+        run: echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/dotnet
+          key: dotnet-wasm-${{ runner.os }}-${{ env.DOTNET_VERSION }}-${{ hashFiles('app/HostBrowser/*.fsproj') }}
+          restore-keys: dotnet-wasm-${{ runner.os }}-${{ env.DOTNET_VERSION }}-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-wasm-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-wasm-
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
+      - name: "workload wasm-tools (sans effet s'il est déjà dans le cache)"
+        run: dotnet workload install wasm-tools --skip-manifest-update
+      - name: "publication Mono AOT partiel"
+        run: dotnet publish app/HostBrowser -c Release -p:RunAOTCompilation=true -p:PartialAot=true -o out/wasm
+      - name: "taille transférée (brotli)"
+        run: |
+          n=$(find out/wasm/wwwroot/_framework -name '*.br' | xargs du -cb | tail -1 | cut -f1)
+          echo "WebAssembly (AOT partiel) : $n octets brotli" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: { name: wasm, path: out/wasm/wwwroot, retention-days: 3, if-no-files-found: error }
+
+  # ---------------------------------------------------------------- bureau : NativeAOT, un runner natif par OS/architecture
+  linux:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'linux') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { rid: linux-x64, os: ubuntu-24.04 }
+          - { rid: linux-arm64, os: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ matrix.rid }}-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-${{ matrix.rid }}-
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
+      - name: "éditeur de liens NativeAOT (clang, zlib) : installé seulement s'il manque"
+        run: |
+          if ! command -v clang >/dev/null || ! dpkg -s zlib1g-dev >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends clang zlib1g-dev
+          fi
+      - name: "publication NativeAOT"
+        run: dotnet publish app/HostStatic -c Release -r ${{ matrix.rid }} -p:DebugType=none -o out/${{ matrix.rid }}
+      - run: du -sh out/${{ matrix.rid }} | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: { name: "${{ matrix.rid }}", path: "out/${{ matrix.rid }}", retention-days: 3, if-no-files-found: error }
+
+  windows:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'windows') }}
+    runs-on: windows-2025   # outils C++ de Visual Studio préinstallés (requis par NativeAOT)
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-win-x64-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-win-x64-
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
+      - run: dotnet publish app/HostStatic -c Release -r win-x64 -p:DebugType=none -o out/win-x64
+      - uses: actions/upload-artifact@v4
+        with: { name: win-x64, path: out/win-x64, retention-days: 3, if-no-files-found: error }
+
+  # un seul runner macOS (le plus cher à l'heure, ×10 hors dépôt public) : NativeAOT arm64 natif + x64 par compilation croisée
+  # entre architectures du même OS (permise, contrairement au croisé entre OS)
+  macos:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'macos') }}
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-osx-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-osx-
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
+      - run: |
+          for rid in osx-arm64 osx-x64; do
+            dotnet publish app/HostStatic -c Release -r $rid -p:DebugType=none -o out/$rid
+          done
+      - uses: actions/upload-artifact@v4
+        with: { name: macos, path: out, retention-days: 3, if-no-files-found: error }
+
+  # ---------------------------------------------------------------- mobile
+  android:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'android') }}
+    runs-on: ubuntu-24.04   # SDK + NDK Android et JDK 17 déjà dans l'image : rien à télécharger
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: app, fetch-depth: 1 }
+      - name: "dossier .NET (mis en cache avec le workload android)"
+        run: echo "DOTNET_INSTALL_DIR=$RUNNER_TEMP/dotnet" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/dotnet
+          key: dotnet-android-${{ runner.os }}-${{ env.DOTNET_VERSION }}-${{ hashFiles('app/HostAndroid/*.fsproj') }}
+          restore-keys: dotnet-android-${{ runner.os }}-${{ env.DOTNET_VERSION }}-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-android-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-android-
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
+      - run: dotnet workload install android --skip-manifest-update
+      # Les licences du SDK de l'image sont déjà acceptées par GitHub ; on n'ajoute pas AcceptAndroidSDKLicenses (décision de l'utilisateur).
+      - name: "APK (Mono, signé avec la clé de débogage)"
+        run: dotnet publish app/HostAndroid -c Release -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME_17_X64" -o out/android
+      - name: "APK NativeAOT arm64 et x64 (expérimental)"
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.android_naot }}
+        run: |
+          for abi in android-arm64 android-x64; do
+            dotnet publish app/HostAndroid -c Release -r $abi -p:AndroidNativeAot=true -p:AndroidSdkDirectory="$ANDROID_HOME" \
+              -p:AndroidNdkDirectory="$ANDROID_NDK_LATEST_HOME" -p:JavaSdkDirectory="$JAVA_HOME_17_X64" -o out/android-naot-$abi
+          done
+      - name: "ne garder que les APK signés"
+        run: |
+          mkdir -p apk && find out -name '*-Signed.apk' -exec sh -c 'cp "$1" "apk/$(basename "$(dirname "$1")")-$(basename "$1")"' _ {} \;
+          ls -l apk | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: { name: android, path: apk, retention-days: 3, if-no-files-found: error }
+
+  ios:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'ios') }}
+    runs-on: macos-26   # le workload ios de .NET 10 exige un Xcode récent (voir le message du workload si le build échoue)
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: app, fetch-depth: 1 }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-ios-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-ios-
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
+      - run: xcodebuild -version | tee -a "$GITHUB_STEP_SUMMARY"
+      - run: dotnet workload install ios --skip-manifest-update
+      # Simulateur : aucun certificat Apple requis. Un .ipa pour appareil exige un certificat et un profil de provisionnement (secrets du dépôt,
+      # à fournir par l'utilisateur) : non fait ici.
+      - run: dotnet build app/HostIOS -c Release -r iossimulator-arm64 -o out/ios
+      - uses: actions/upload-artifact@v4
+        with: { name: ios-simulator, path: out/ios, retention-days: 3, if-no-files-found: error }

@@ -25,7 +25,7 @@ Avant d'écrire ou de modifier du code qui s'appuie sur F*, Custard, Avalonia ou
   quand un chiffre ou un comportement change.
 - Pour chaque contournement : l'erreur exacte, la version, « inévitable » (défaut de la version) ou « évitable » (mon choix de code).
 - Ne pas déposer de ticket ni publier quoi que ce soit en dehors de ce dépôt sans accord explicite de l'utilisateur.
-- **Pas de GitHub Actions** (décision de l'utilisateur). Ne citer aucun numéro de ticket qu'on n'a pas lu soi-même.
+- **GitHub Actions** : uniquement pour construire les plateformes (`.github/workflows/build.yml`, `docs/CI.md`), jamais sur un simple push ; ne pas la lancer ni consommer de minutes sans accord ; les tests restent `scripts/all.sh`. Ne citer aucun numéro de ticket qu'on n'a pas lu soi-même.
 - Les mesures sont faites sous Xvfb sans GPU : ne jamais les présenter comme valables pour un GPU ou le mobile.
 
 ## 3. Pièges connus (détails dans `docs/`)

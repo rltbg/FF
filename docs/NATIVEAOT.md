@@ -77,7 +77,7 @@ Le gain de l'AOT Mono se voit sur le **calcul** (≈ ×2,3 ici), pas sur le char
 
 ## 8. Ce qui reste à décider ou à faire
 
-1. Machines Windows et macOS (ou runners) pour construire et tester le NativeAOT desktop/iOS/Catalyst : sans elles, ces cibles resteront « écrites, non construites ». (La décision « pas de GitHub Actions » exclut les runners hébergés par ce moyen ; une machine ou une VM par OS convient : `scripts/platforms.sh <rid>` est le point d'entrée.)
+1. Machines Windows et macOS (ou runners) pour construire et tester le NativeAOT desktop/iOS/Catalyst : sans elles, ces cibles resteront « écrites, non construites ». Les runners GitHub Actions (Windows, macOS, ARM) fournissent ces machines : voir `docs/CI.md` (workflow écrit, jamais exécuté) ; `scripts/platforms.sh <rid>` reste le point d'entrée local.
 2. Tester l'APK NativeAOT sur un émulateur ou un appareil (interop Java).
 3. Linux arm64 en croisé : installer `gcc-aarch64-linux-gnu`, `binutils-aarch64-linux-gnu`, `zlib1g-dev:arm64` (modifie le système).
 4. Navigateur : choisir entre rester en Mono WASM (non AOT), activer l'AOT Mono (`RunAOTCompilation`, bundle plus gros, démarrage plus rapide), ou attendre un NativeAOT-LLVM officiel.

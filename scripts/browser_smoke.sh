@@ -2,11 +2,11 @@
 # Test de fumée de la tête NAVIGATEUR (WebAssembly) dans le Chromium de Playwright (rendu WebGL logiciel SwiftShader) :
 # la page se charge, un <canvas> est créé, aucune erreur de page ; un clic sur « + » change l'image (le modèle F* a réagi).
 # Pas d'oracle sur l'état du modèle (le journal MVU_TRACE n'existe pas dans un navigateur) : le test est plus faible que ui_smoke.sh.
-# prérequis : scripts/platforms.sh browser ; node + paquet playwright (préinstallés dans cet environnement) ; sauté sinon (code 3).
+# prérequis : scripts/platforms.sh browser-aot-partial ; node + paquet playwright (préinstallés dans cet environnement) ; sauté sinon (code 3).
 set -uo pipefail
 source "$(dirname "$0")/env.sh"
-W="$ROOT/out/platforms/browser/wwwroot"; S="$ROOT/shots/browser"; mkdir -p "$S"
-[ -f "$W/index.html" ] || { echo "SAUTÉ : lancer scripts/platforms.sh browser"; exit 3; }
+W="$ROOT/out/platforms/browser-aot-partial/wwwroot"; S="$ROOT/shots/browser"; mkdir -p "$S"
+[ -f "$W/index.html" ] || { echo "SAUTÉ : lancer scripts/platforms.sh browser-aot-partial"; exit 3; }
 command -v node >/dev/null && NODE_PATH=$(npm root -g 2>/dev/null) node -e "require('playwright')" 2>/dev/null || { echo "SAUTÉ : node + playwright absents"; exit 3; }
 PORT=$((20000 + RANDOM % 10000))
 python3 -m http.server $PORT --directory "$W" > "$S/http.log" 2>&1 & H=$!

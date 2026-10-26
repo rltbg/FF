@@ -5,7 +5,7 @@
 #              publication autonome (self-contained), JIT, depuis n'importe quel OS (la publication croisée n'exige pas de chaîne native) ;
 #   aot      : NativeAOT, seulement pour le RID de la machine (le compilateur natif ne cross-compile pas entre OS) ;
 #   browser  : WebAssembly (workload wasm-tools) ;  android : APK signé (workload android + SDK) ;  ios : macOS + Xcode seulement.
-# usage : platforms.sh [cible ...]   (cibles : les RID ci-dessus, aot, browser, android, ios ; défaut : toutes)
+# usage : platforms.sh [cible ...]   (cibles : les RID ci-dessus, aot, browser-aot-partial (défaut navigateur), browser (interprète), browser-aot (AOT complet), android, ios ; défaut : toutes)
 set -uo pipefail
 source "$(dirname "$0")/env.sh"
 export USER="${USER:-$(id -un)}"
@@ -13,7 +13,7 @@ OUT="$ROOT/out/platforms"; mkdir -p "$OUT" "$ROOT/logs"
 ASDK="$ROOT/.tools/android-sdk"
 HOSTRID=$(dotnet --info | awk '/RID:/{print $2; exit}')
 RIDS=(win-x64 win-arm64 osx-x64 osx-arm64 linux-x64 linux-arm64 linux-musl-x64 linux-musl-arm64)
-targets=("$@"); [ ${#targets[@]} -eq 0 ] && targets=("${RIDS[@]}" aot browser android android-naot ios)
+targets=("$@"); [ ${#targets[@]} -eq 0 ] && targets=("${RIDS[@]}" aot browser-aot-partial android android-naot ios)
 : > "$ROOT/logs/platforms.tsv"
 rec() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" | tee -a "$ROOT/logs/platforms.tsv" >/dev/null; printf '%-18s %-9s %-8s %s\n' "$1" "$2" "$3" "$4"; }
 size() { du -sh "$1" 2>/dev/null | cut -f1; }
