@@ -98,8 +98,11 @@ jobs:
         run: |
           n=$(find out/wasm/wwwroot/_framework -name '*.br' | xargs du -cb | tail -1 | cut -f1)
           echo "WebAssembly (AOT partiel) : $n octets brotli" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: "un seul fichier : fstar-mvu-wasm.zip (à servir en HTTP, voir docs/CI.md)"
+        run: (cd out/wasm/wwwroot && zip -qr -X "$GITHUB_WORKSPACE/fstar-mvu-wasm.zip" .)
+      # archive: false : le fichier est téléchargeable tel quel (sans zip supplémentaire autour)
       - uses: actions/upload-artifact@v7
-        with: { name: wasm, path: out/wasm/wwwroot, retention-days: 3, if-no-files-found: error }
+        with: { path: fstar-mvu-wasm.zip, archive: false, retention-days: 3, if-no-files-found: error }
 
   # ---------------------------------------------------------------- bureau : NativeAOT, un runner natif par OS/architecture
   linux:
@@ -132,9 +135,14 @@ jobs:
           fi
       - name: "publication NativeAOT"
         run: dotnet publish app/HostStatic -c Release -r ${{ matrix.rid }} -p:DebugType=none -o out/${{ matrix.rid }}
-      - run: du -sh out/${{ matrix.rid }} | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: "contenu publié et dépendances dynamiques"
+        run: |
+          ls -la out/${{ matrix.rid }} | tee -a "$GITHUB_STEP_SUMMARY"
+          ldd out/${{ matrix.rid }}/HostStatic | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: "un seul fichier : fstar-mvu-${{ matrix.rid }}.tar.gz"
+        run: tar -czf fstar-mvu-${{ matrix.rid }}.tar.gz -C out/${{ matrix.rid }} .
       - uses: actions/upload-artifact@v7
-        with: { name: "${{ matrix.rid }}", path: "out/${{ matrix.rid }}", retention-days: 3, if-no-files-found: error }
+        with: { path: "fstar-mvu-${{ matrix.rid }}.tar.gz", archive: false, retention-days: 3, if-no-files-found: error }
 
   windows:
     needs: extract
@@ -160,8 +168,13 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
       - run: dotnet publish app/HostStatic -c Release -r ${{ matrix.rid }} -p:DebugType=none -o out/${{ matrix.rid }}
+      - name: "un seul fichier : fstar-mvu-${{ matrix.rid }}.zip"
+        shell: pwsh
+        run: |
+          Get-ChildItem out/${{ matrix.rid }} | Format-Table Name, Length | Out-String | Tee-Object -Append $env:GITHUB_STEP_SUMMARY
+          Compress-Archive -Path out/${{ matrix.rid }}/* -DestinationPath fstar-mvu-${{ matrix.rid }}.zip
       - uses: actions/upload-artifact@v7
-        with: { name: "${{ matrix.rid }}", path: "out/${{ matrix.rid }}", retention-days: 3, if-no-files-found: error }
+        with: { path: "fstar-mvu-${{ matrix.rid }}.zip", archive: false, retention-days: 3, if-no-files-found: error }
 
   # un seul runner macOS (le plus cher à l'heure, ×10 hors dépôt public) : NativeAOT arm64 natif + x64 par compilation croisée
   # entre architectures du même OS (permise, contrairement au croisé entre OS)
@@ -172,7 +185,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
-        with: { sparse-checkout: app, fetch-depth: 1 }
+        with: { sparse-checkout: "app\nscripts", fetch-depth: 1 }
       - uses: actions/download-artifact@v8
         with: { name: extracted, path: app/Extracted }
       - uses: actions/cache@v6
@@ -182,12 +195,31 @@ jobs:
           restore-keys: nuget-osx-
       - uses: actions/setup-dotnet@v6
         with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
-      - run: |
+      - name: "publication NativeAOT arm64 et x64"
+        run: |
           for rid in osx-arm64 osx-x64; do
             dotnet publish app/HostStatic -c Release -r $rid -p:DebugType=none -o out/$rid
           done
+      - name: "bundles .app (signature ad hoc, vérifiés) et un .zip par architecture"
+        run: |
+          for rid in osx-arm64 osx-x64; do
+            scripts/macos_app.sh out/$rid out/app-$rid/FStarMVU.app HostStatic 1.0
+            file out/app-$rid/FStarMVU.app/Contents/MacOS/HostStatic | tee -a "$GITHUB_STEP_SUMMARY"
+            ls out/app-$rid/FStarMVU.app/Contents/MacOS | tee -a "$GITHUB_STEP_SUMMARY"
+            ditto -c -k --keepParent out/app-$rid/FStarMVU.app fstar-mvu-$rid.app.zip
+          done
+      # Test de lancement (arm64, natif sur ce runner) : l'app doit rester vivante 8 s. Non bloquant : un runner sans session graphique peut la refuser.
+      - name: "lancement de l'app arm64 pendant 8 s"
+        continue-on-error: true
+        run: |
+          out/app-osx-arm64/FStarMVU.app/Contents/MacOS/HostStatic > launch.log 2>&1 &
+          pid=$!; sleep 8
+          if kill -0 $pid 2>/dev/null; then echo "L'app tourne encore après 8 s (pid $pid)" | tee -a "$GITHUB_STEP_SUMMARY"; kill $pid
+          else echo "L'app s'est arrêtée avant 8 s :" | tee -a "$GITHUB_STEP_SUMMARY"; tail -20 launch.log | tee -a "$GITHUB_STEP_SUMMARY"; exit 1; fi
       - uses: actions/upload-artifact@v7
-        with: { name: macos, path: out, retention-days: 3, if-no-files-found: error }
+        with: { path: "fstar-mvu-osx-arm64.app.zip", archive: false, retention-days: 3, if-no-files-found: error }
+      - uses: actions/upload-artifact@v7
+        with: { path: "fstar-mvu-osx-x64.app.zip", archive: false, retention-days: 3, if-no-files-found: error }
 
   # ---------------------------------------------------------------- mobile
   android:
@@ -225,12 +257,22 @@ jobs:
             dotnet publish app/HostAndroid -c Release -r $abi -p:AndroidNativeAot=true -p:AndroidSdkDirectory="$ANDROID_HOME" \
               -p:AndroidNdkDirectory="$ANDROID_NDK_HOME" -p:JavaSdkDirectory="$JAVA_HOME_17_X64" -o out/android-naot-$abi
           done
-      - name: "ne garder que les APK signés"
+      - name: "APK : un seul fichier, vérifié (signature, bibliothèque native, absence de Mono)"
         run: |
-          mkdir -p apk && find out -name '*-Signed.apk' -exec sh -c 'cp "$1" "apk/$(basename "$(dirname "$1")")-$(basename "$1")"' _ {} \;
-          ls -l apk | tee -a "$GITHUB_STEP_SUMMARY"
+          APK=$(find out -name '*-Signed.apk' | head -1); cp "$APK" fstar-mvu-android-arm64.apk; APK=fstar-mvu-android-arm64.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1); echo "build-tools : $BT"
+          { echo '### APK'; ls -l "$APK"; "$BT/apksigner" verify --verbose --print-certs "$APK" | head -8; "$BT/aapt2" dump badging "$APK" | grep -E "^(package|sdkVersion|targetSdkVersion|native-code|launchable-activity)"; } | tee -a "$GITHUB_STEP_SUMMARY"
+          unzip -l "$APK" | grep -E "lib/.*\.so" | tee -a "$GITHUB_STEP_SUMMARY"
+          unzip -l "$APK" | grep -q "lib/arm64-v8a/libHostAndroid.so" || { echo "libHostAndroid.so (code géré compilé en natif) absente"; exit 1; }
+          if unzip -l "$APK" | grep -qE "libmonosgen|libmonodroid|\.dll$"; then echo "Mono ou des DLL sont présents : ce n'est pas du NativeAOT"; exit 1; fi
+      # informatif : alignement 16 Ko des pages (exigé par Google Play pour les apps ciblant Android 15+) ; non bloquant
+      - name: "alignement 16 Ko (informatif)"
+        continue-on-error: true
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/zipalign" -c -P 16 -v 4 fstar-mvu-android-arm64.apk | tail -5 | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
-        with: { name: android, path: apk, retention-days: 3, if-no-files-found: error }
+        with: { path: fstar-mvu-android-arm64.apk, archive: false, retention-days: 3, if-no-files-found: error }
 
   ios:
     needs: extract
@@ -239,7 +281,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
-        with: { sparse-checkout: app, fetch-depth: 1 }
+        with: { sparse-checkout: "app\nscripts", fetch-depth: 1 }
       - uses: actions/download-artifact@v8
         with: { name: extracted, path: app/Extracted }
       - uses: actions/cache@v6
@@ -256,8 +298,13 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_26.0.1.app
           xcodebuild -version | tee -a "$GITHUB_STEP_SUMMARY"
       - run: dotnet workload install ios --skip-manifest-update
-      # Simulateur : aucun certificat Apple requis. Un .ipa pour appareil exige un certificat et un profil de provisionnement (secrets du dépôt,
-      # à fournir par l'utilisateur) : non fait ici.
-      - run: dotnet build app/HostIOS -c Release -r iossimulator-arm64 -o out/ios
+      # Appareil (ios-arm64), NativeAOT, SANS signature : aucun compte Apple dans la CI. Le .ipa produit doit être re-signé pour être installé
+      # (AltStore, Sideloadly, TrollStore, ou codesign avec votre certificat) : voir scripts/ios_ipa.sh et docs/CI.md.
+      - name: "publication iOS appareil NativeAOT, sans signature"
+        run: dotnet publish app/HostIOS -c Release -r ios-arm64 -p:PublishAot=true -p:EnableCodeSigning=false -p:ArchiveOnBuild=false
+      - name: "emballage .ipa non signé, vérifié"
+        run: |
+          find app/HostIOS/bin -maxdepth 6 \( -name '*.app' -o -name '*.ipa' \) | tee -a "$GITHUB_STEP_SUMMARY"
+          scripts/ios_ipa.sh app/HostIOS/bin fstar-mvu-ios-unsigned.ipa 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
-        with: { name: ios-simulator, path: out/ios, retention-days: 3, if-no-files-found: error }
+        with: { path: fstar-mvu-ios-unsigned.ipa, archive: false, retention-days: 3, if-no-files-found: error }
