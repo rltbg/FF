@@ -301,7 +301,7 @@ jobs:
       # Appareil (ios-arm64), NativeAOT, SANS signature : aucun compte Apple dans la CI. Le .ipa produit doit être re-signé pour être installé
       # (AltStore, Sideloadly, TrollStore, ou codesign avec votre certificat) : voir scripts/ios_ipa.sh et docs/CI.md.
       - name: "publication iOS appareil NativeAOT, sans signature"
-        run: dotnet publish app/HostIOS -c Release -r ios-arm64 -p:PublishAot=true -p:EnableCodeSigning=false -p:ArchiveOnBuild=false
+        run: dotnet publish app/HostIOS -c Release -r ios-arm64 -p:EnableCodeSigning=false -p:ArchiveOnBuild=false
       - name: "emballage .ipa non signé, vérifié"
         run: |
           find app/HostIOS/bin -maxdepth 6 \( -name '*.app' -o -name '*.ipa' \) | tee -a "$GITHUB_STEP_SUMMARY"
