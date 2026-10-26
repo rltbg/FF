@@ -93,3 +93,9 @@ Il pourrait théoriquement construire le seul WebAssembly (≈ 3 min ici, sous l
 ## Versions des actions (relevées le 2026-10-26 sur les pages de versions de chaque action)
 
 `actions/checkout@v7`, `actions/setup-dotnet@v6`, `actions/cache@v6`, `actions/upload-artifact@v7`, `actions/download-artifact@v8` : dernières versions majeures publiées. Les notes de version ne montrent aucune rupture touchant ce workflow (téléchargement d'artefact : décompression automatique des archives zip, erreur en cas de hash différent ; envoi : archive zip par défaut). Les versions sont épinglées par version majeure, pas par SHA : à durcir si la chaîne d'approvisionnement compte. Non exécuté : une rupture non signalée dans ces notes ne serait vue qu'au premier lancement.
+
+## Développement (JIT, local) et construction (NativeAOT, CI) : deux chemins séparés
+
+- **Dev** : `scripts/dev.sh run` (fenêtre en JIT, Debug) ou `scripts/dev.sh watch` (rechargement à chaud à chaque sauvegarde de `fst/*.fst`). Aucune autre plateforme, aucun NativeAOT, aucun runner. Mesuré ici (Xvfb, sans GPU) : un tour de boucle en mode `lax` = 6,9 à 7,9 s ; rechargement dans la fenêtre = 33 ms, état du modèle conservé.
+- **Local, avant de conclure** : `scripts/all.sh` (JIT, NativeAOT Linux x64, tests F*, GUI, rechargement à chaud, navigateur). Il ne reconstruit plus les autres plateformes.
+- **CI** : le NativeAOT de chaque plateforme (Windows, macOS, Linux arm64, Android, iOS), seulement à la demande (lancement manuel ou étiquette).

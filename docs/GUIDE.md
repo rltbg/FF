@@ -40,7 +40,8 @@ Pré-requis système pour l'interface : Xvfb, `xdotool`, `x11-utils` (xwininfo, 
 | Script | Rôle |
 |---|---|
 | `extract.sh [full\|admit\|lax]` | vérifie `Core` puis `App` (dans cet ordre), extrait vers `app/Extracted/` |
-| `build.sh` | compile tout, publie HostStatic et Tests en NativeAOT dans `out/` |
+| `dev.sh [run\|watch [mode]\|aot]` | **développement en JIT sur la machine courante** : `run` ouvre la fenêtre (Debug) ; `watch` ajoute le rechargement à chaud à chaque modification de `fst/*.fst` (vérification → extraction → `Extracted.dll`, ≈ 7 s en mode `lax`, rechargement de la fenêtre ≈ 30 ms, état conservé) ; `aot` publie le NativeAOT de cette machine seulement |
+| `build.sh [--aot]` | compile les têtes bureau en JIT ; `--aot` publie en plus HostStatic en NativeAOT (linux-x64) dans `out/` |
 | `test.sh` | suite de tests en JIT puis en AOT |
 | `ui_smoke.sh <cmd>` | parcours GUI complet sous Xvfb, oracles sur l'état du modèle |
 | `hotreload.sh` | 5 scénarios de rechargement à chaud + assertion de déchargement |

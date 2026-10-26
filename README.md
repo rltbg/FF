@@ -2,7 +2,7 @@
 
 Banc d'essai d'une application MVU dont le modèle, `update`, `view` (arbre de vue en donnée) et la validation sont
 écrits et prouvés en F*, extraits en F# (`--codegen FSharp`, backend Custard), puis affichés par un petit
-interpréteur Avalonia. Rechargement à chaud en dev (hôte `AssemblyLoadContext`), NativeAOT en release.
+interpréteur Avalonia. Rechargement à chaud en dev (hôte `AssemblyLoadContext`, JIT, sur la machine du développeur : `scripts/dev.sh`), NativeAOT en release (une construction par plateforme dans la CI).
 
 Versions : F* 2026.10.25 · .NET SDK 10.0.403 · Avalonia 12.1.4 · FSharp.Core 10.1.403.
 
@@ -38,7 +38,8 @@ Versions : F* 2026.10.25 · .NET SDK 10.0.403 · Avalonia 12.1.4 · FSharp.Core 
 ```
 scripts/setup.sh        # F* et SDK .NET dans .tools/ (versions épinglées)
 scripts/sources.sh      # code source de F* et d'Avalonia aux mêmes versions, dans .tools/src/ (à lire avant d'écrire)
-scripts/all.sh          # passe complète depuis zéro : extraction, build + AOT, tests, GUI, rechargement, mutations
+scripts/dev.sh          # DEV : fenêtre en JIT sur votre machine (`dev.sh watch` : rechargement à chaud à chaque sauvegarde de fst/*.fst)
+scripts/all.sh          # passe complète depuis zéro : extraction, build + AOT (Linux x64), tests, GUI, rechargement, mutations
 ```
 Tests : `ftests.sh` (suite F*), `upstream_tests.sh` (tests amont de F* via le backend F#), `ulib_sweep.sh` (221 modules d'ulib), `bench_model.sh`, `loc.sh`. Plateformes : `platforms_setup.sh`, `platforms.sh [cible]`, `browser_smoke.sh`. Scripts unitaires : `extract.sh [full|admit|lax]`, `build.sh`, `test.sh`, `ui_smoke.sh <cmd>`, `hotreload.sh`,
 `mutate.sh`, `matrix.sh`, `scale.sh`, `repro_char_code.sh`, `loop.sh [mode]`, `loop_bench.sh`, `startup.sh <label> <cmd>`,
