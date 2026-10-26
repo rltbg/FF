@@ -13,7 +13,8 @@ Versions : F* 2026.10.25 (commit 362e792), .NET SDK 10.0.403 (dotnet-install.sh,
 FSharp.Core 10.1.403. Environnement : conteneur Linux x86_64, 4 vCPU, sans GPU, Xvfb.
 1re passe : commit `1a45fba` (rapport et code d'origine).
 
-3e passe : `scripts/all.sh` depuis zéro → `TOUT OK` en 20 min 49 s (`logs/all.log`), avec 13 étapes dont les tests F*, les tests amont et le balayage d'ulib.
+4e passe (après l'ajout de la CI, du dev en JIT et du retrait des builds de plateformes de `all.sh`) : `scripts/all.sh` depuis zéro → `TOUT OK` en 22 min (1 341 s cumulées sur 16 étapes, `logs/all.log`). Les plateformes autres que Linux x64 et le navigateur sont construites par la CI (`docs/CI.md`), plus par `all.sh`.
+3e passe (avant) : `scripts/all.sh` depuis zéro → `TOUT OK` en 20 min 49 s (`logs/all.log`), avec 13 étapes dont les tests F*, les tests amont et le balayage d'ulib.
 
 Cette passe (2e) est partie d'une remise à zéro complète :
 - espace de travail, caches NuGet et outils supprimés ;
