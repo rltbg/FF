@@ -16,3 +16,5 @@ logs/loop/
 app/Extracted/Extracted.fs
 app/Extracted/FStarCustard.fs
 app/Extracted/Extracted.fsproj
+logs/ulib/*/o/
+logs/upstream/*/o/
