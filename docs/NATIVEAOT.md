@@ -50,7 +50,17 @@ NativeAOT n'est **pas** une cible officielle pour `browser-wasm` (absent de la t
 | Canvas créé après chargement | 1,25–1,7 s | 1,4–1,5 s (pas d'avantage visible) |
 | Clic « Hacher le texte (F*) » → résultat affiché (texte de 1 Mo généré et haché par F*) | 330–410 ms | 140–175 ms |
 
-Le gain de l'AOT Mono se voit sur le **calcul** (≈ ×2,3 ici), pas sur le chargement ; il coûte presque le double en téléchargement. À titre de repère, le même hachage dure 3 ms en NativeAOT sur le bureau (REPORT §7) : WebAssembly reste ≈ 40 à 100 fois plus lent que le natif, AOT compris. Mesures de ce conteneur uniquement, sur trois essais ; la mesure inclut le délai des captures d'écran.
+**Comment ne pas doubler le téléchargement : AOT partiel** (`-p:RunAOTCompilation=true -p:PartialAot=true`, cible `scripts/platforms.sh browser-aot-partial`). Le SDK WebAssembly ignore les assemblies listés dans l'item interne `_AOT_InternalForceInterpretAssemblies` (`WasmApp.Common.targets`) : on y met Avalonia, Skia, HarfBuzz et les `System.*` volumineux, qui restent interprétés ; seuls le code F* extrait, `Shell`, `Ui`, `FSharp.Core`, CoreLib, Numerics, Collections et Linq sont compilés (voir `HostBrowser.fsproj`).
+
+| | interprète | AOT complet | **AOT partiel** |
+|---|---|---|---|
+| Transfert brotli | 4,18 Mo | 7,54 Mo (+80 %) | **5,56 Mo (+33 %)** |
+| Publication | ≈ 1 min | ≈ 6 min | ≈ 3 min |
+| Hachage 1 Mo (3 essais) | 361–388 ms | 140–175 ms | **145–194 ms** |
+
+Le gain de calcul (≈ ×2,3) est conservé ; le surcoût de téléchargement passe de +80 % à +33 %, il est dans `dotnet.native.wasm` (2,0 → 3,6 Mo brotli). Essayé sans succès : (a) laisser CoreLib interprété : `wasm-ld: undefined symbol: aot_wrapper_icall_mono_helper_ldstr` (avec FSharp.Core) puis `aot_wrapper_icall_mono_generic_class_init` (sans FSharp.Core) : CoreLib doit rester compilé, **inévitable** (défaut de cette version du SDK) ; (b) `TrimMode=full`, `-Oz`, `WasmEnableExceptionHandling` : taille identique à l'octet près ou gain nul. Non essayé : l'AOT guidé par profil (`WasmAotProfilePath`, profil à produire avec `WasmProfilers=aot` et à extraire du navigateur) : piste restante pour descendre sous +33 %. Mesures de ce conteneur uniquement (Xvfb, sans GPU).
+
+Le gain de l'AOT Mono se voit sur le **calcul** (≈ ×2,3 ici), pas sur le chargement ; il coûte presque le double en téléchargement (sauf en AOT partiel, ci-dessus). À titre de repère, le même hachage dure 3 ms en NativeAOT sur le bureau (REPORT §7) : WebAssembly reste ≈ 40 à 100 fois plus lent que le natif, AOT compris. Mesures de ce conteneur uniquement, sur trois essais ; la mesure inclut le délai des captures d'écran.
 
 ## 7. Bilan par plateforme
 
@@ -63,7 +73,7 @@ Le gain de l'AOT Mono se voit sur le **calcul** (≈ ×2,3 ici), pas sur le char
 | macOS x64/arm64 | oui | **machine macOS** + Xcode | non essayé : impossible depuis Linux |
 | iOS / Mac Catalyst / tvOS | oui (.NET 9+) | **machine macOS** + Xcode + workload | `HostIOS` écrit, non compilé |
 | Android arm64/x64/arm | **expérimental** | Linux/Windows/macOS avec NDK r27+ | **APK construit** (arm64, x64), jamais lancé ; `arm` non essayé |
-| Navigateur | **non** (Mono WASM AOT à la place) | tout OS avec `wasm-tools` | construit en Mono WASM sans AOT natif ; AOT Mono non essayé |
+| Navigateur | **non** (Mono WASM AOT à la place) | tout OS avec `wasm-tools` | construit en Mono WASM (interprète, AOT complet, AOT partiel) ; meilleur compromis : AOT partiel |
 
 ## 8. Ce qui reste à décider ou à faire
 

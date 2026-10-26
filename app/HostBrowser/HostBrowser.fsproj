@@ -10,6 +10,12 @@
     <WasmBuildNative>true</WasmBuildNative>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <!-- AOT PARTIEL (voir docs/NATIVEAOT.md §6) : avec -p:RunAOTCompilation=true -p:PartialAot=true, seuls le code F* extrait, Shell, Ui, FSharp.Core et le noyau
+       de calcul (CoreLib, Numerics, Collections, Linq) sont compilés en WebAssembly ; Avalonia, Skia et le reste restent interprétés (comme sans AOT).
+       Item interne du SDK WebAssembly (WasmApp.Common.targets : « Skip known-huge assemblies specified in csproj »). -->
+  <ItemGroup Condition="'$(PartialAot)' == 'true'">
+    <_AOT_InternalForceInterpretAssemblies Include="Avalonia.Base.dll;Avalonia.Browser.dll;Avalonia.Controls.dll;Avalonia.Dialogs.dll;Avalonia.HarfBuzz.dll;Avalonia.Markup.dll;Avalonia.Markup.Xaml.dll;Avalonia.Metal.dll;Avalonia.OpenGL.dll;Avalonia.Skia.dll;Avalonia.Themes.Fluent.dll;Avalonia.Vulkan.dll;HarfBuzzSharp.dll;SkiaSharp.dll;System.dll;System.Collections.Concurrent.dll;System.Collections.NonGeneric.dll;System.Collections.Specialized.dll;System.ComponentModel.dll;System.ComponentModel.Primitives.dll;System.ComponentModel.TypeConverter.dll;System.Diagnostics.DiagnosticSource.dll;System.IO.Compression.dll;System.Linq.Expressions.dll;System.ObjectModel.dll;System.Private.Uri.dll;System.Runtime.InteropServices.JavaScript.dll;System.Text.RegularExpressions.dll" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
   </ItemGroup>
