@@ -99,7 +99,13 @@ jobs:
 
   windows:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.targets == 'all' || contains(inputs.targets, 'windows') }}
-    runs-on: windows-2025   # outils C++ de Visual Studio préinstallés (requis par NativeAOT)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { rid: win-x64, os: windows-2025 }     # outils C++ de Visual Studio préinstallés (requis par NativeAOT)
+          - { rid: win-arm64, os: windows-11-arm } # runner ARM natif, gratuit en dépôt public
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -107,13 +113,13 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-win-x64-${{ hashFiles('app/**/*.fsproj') }}
-          restore-keys: nuget-win-x64-
+          key: nuget-${{ matrix.rid }}-${{ hashFiles('app/**/*.fsproj') }}
+          restore-keys: nuget-${{ matrix.rid }}-
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
-      - run: dotnet publish app/HostStatic -c Release -r win-x64 -p:DebugType=none -o out/win-x64
+      - run: dotnet publish app/HostStatic -c Release -r ${{ matrix.rid }} -p:DebugType=none -o out/${{ matrix.rid }}
       - uses: actions/upload-artifact@v4
-        with: { name: win-x64, path: out/win-x64, retention-days: 3, if-no-files-found: error }
+        with: { name: "${{ matrix.rid }}", path: "out/${{ matrix.rid }}", retention-days: 3, if-no-files-found: error }
 
   # un seul runner macOS (le plus cher à l'heure, ×10 hors dépôt public) : NativeAOT arm64 natif + x64 par compilation croisée
   # entre architectures du même OS (permise, contrairement au croisé entre OS)
