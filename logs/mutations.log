@@ -1,0 +1,25 @@
+== M1 constante FNV
+F* (preuves complètes) : ACCEPTÉE
+FAIL: fnv = ref
+FAIL: fnv_utf8 = ref
+checks=949803 fails=37972
+=> détectée par les tests
+== M2 borne d'âge 151
+F* (preuves complètes) : REJETÉE
+* Error 19 at Core.fst(119,36-119,37):
+  - Expected type n: FStar.UInt32.t{FStar.UInt32.v n <= 150}
+    got type n: FStar.UInt32.t{FStar.UInt32.v n <= 1000}
+  - Failed to prove: FStar.UInt32.v n <= 150
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: age diff 151
+FAIL: age diff 151
+checks=949803 fails=10
+=> détectée aussi par les tests
+== M3 règle printable
+F* (preuves complètes) : ACCEPTÉE
+FAIL: nom C1 0x9F
+FAIL: printable 159
+checks=949803 fails=2
+=> détectée par les tests
+MUTATIONS : toutes détectées

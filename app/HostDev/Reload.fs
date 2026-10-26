@@ -7,18 +7,26 @@ open System.Runtime.Loader
 open Microsoft.FSharp.Reflection
 open Ui
 
+/// Contexte collectible : FSharp.Core et Avalonia ne sont pas chargés ici, la résolution
+/// retombe sur le contexte par défaut (partagé avec l'hôte).
 type CoreAlc() =
-  inherit AssemblyLoadContext("core", true)
+  inherit AssemblyLoadContext("fstar-core", true)
 
 exception TransplantFailed of string
 
-/// Copie structurelle d'une valeur d'un assembly vers le type de même nom d'un autre assembly.
+/// Copie structurelle d'une valeur vers le type de même nom d'un autre assembly
+/// (enregistrements, unions, listes, tuples, option, primitives). Échoue si la forme a changé.
 let rec transplant (src: obj) (target: Type) : obj =
-  if isNull src then null
-  elif target.IsPrimitive || target = typeof<string> || target = typeof<bigint> || target.IsEnum then src
+  if isNull src then null // None d'une option
+  elif target.IsPrimitive || target = typeof<string> || target = typeof<bigint> || target.IsEnum then
+    if src.GetType() <> target then
+      raise (TransplantFailed ("type changé: " + src.GetType().Name + " -> " + target.Name))
+    src
   elif FSharpType.IsRecord(target, true) then
     let sFields = FSharpType.GetRecordFields(src.GetType(), true)
     let tFields = FSharpType.GetRecordFields(target, true)
+    if sFields.Length <> tFields.Length then
+      raise (TransplantFailed ("champs changés: " + target.Name))
     let vals =
       tFields |> Array.map (fun tf ->
         match sFields |> Array.tryFind (fun sf -> sf.Name = tf.Name) with
@@ -27,14 +35,17 @@ let rec transplant (src: obj) (target: Type) : obj =
     FSharpValue.MakeRecord(target, vals, true)
   elif target.IsGenericType && target.GetGenericTypeDefinition() = typedefof<list<_>> then
     let et = target.GetGenericArguments().[0]
-    let items = [ for x in (src :?> System.Collections.IEnumerable) -> transplant x et ]
+    let items = [| for x in (src :?> Collections.IEnumerable) -> transplant x et |]
     let arr = Array.CreateInstance(et, items.Length)
-    items |> List.iteri (fun i x -> arr.SetValue(x, i))
-    let m = typeof<list<int>>.Assembly.GetType("Microsoft.FSharp.Collections.ListModule").GetMethod("OfArray").MakeGenericMethod(et)
-    m.Invoke(null, [| box arr |])
+    items |> Array.iteri (fun i x -> arr.SetValue(x, i))
+    let ofArray =
+      typeof<list<int>>.Assembly.GetType("Microsoft.FSharp.Collections.ListModule")
+        .GetMethod("OfArray").MakeGenericMethod(et)
+    ofArray.Invoke(null, [| box arr |])
   elif FSharpType.IsTuple target then
     let sv = FSharpValue.GetTupleFields src
     let ts = FSharpType.GetTupleElements target
+    if sv.Length <> ts.Length then raise (TransplantFailed "arité de tuple changée")
     FSharpValue.MakeTuple(Array.map2 transplant sv ts, target)
   elif FSharpType.IsUnion(target, true) then
     let sc, sf = FSharpValue.GetUnionFields(src, src.GetType(), true)
@@ -46,9 +57,15 @@ let rec transplant (src: obj) (target: Type) : obj =
       FSharpValue.MakeUnion(tc, Array.map2 (fun v (p: PropertyInfo) -> transplant v p.PropertyType) sf tfs, true)
   else raise (TransplantFailed ("type non géré: " + target.FullName))
 
+let tryTransplant (src: obj) (target: Type) : Result<obj, string> =
+  try Ok (transplant src target) with
+  | TransplantFailed why -> Error why
+  | e -> Error (e.GetType().Name + ": " + e.Message)
+
+/// Conversion réflexive de l'arbre de vue extrait (app_view_tree) en Node.
 let rec toNode (v: obj) : Node =
   let c, f = FSharpValue.GetUnionFields(v, v.GetType(), true)
-  let kids (o: obj) = [ for x in (o :?> System.Collections.IEnumerable) -> toNode x ]
+  let kids (o: obj) = [ for x in (o :?> Collections.IEnumerable) -> toNode x ]
   match c.Name with
   | "App_VColumn" -> Column (kids f.[0])
   | "App_VRow" -> Row (kids f.[0])
@@ -57,18 +74,19 @@ let rec toNode (v: obj) : Node =
   | "App_VButton" -> Button (f.[0] :?> string, f.[1])
   | "App_VInput" -> Input (f.[0], f.[1] :?> string, f.[2] :?> string)
   | "App_VCheck" -> Check (f.[0] :?> string, f.[1] :?> bool, f.[2])
-  | n -> raise (TransplantFailed ("noeud de vue inconnu: " + n))
+  | n -> failwith ("noeud de vue inconnu: " + n)
 
-/// Charge Extracted.dll depuis des octets (pas de verrou de fichier) dans un contexte collectible.
-let load (path: string) : CoreAlc * Assembly * CoreApi * (obj -> Type) =
-  let bytes =
-    let rec go n =
-      try File.ReadAllBytes path with :? IOException when n > 0 -> Threading.Thread.Sleep 100; go (n - 1)
-    go 30
+/// Charge Extracted.dll depuis ses octets (pas de verrou sur le fichier) dans un contexte collectible.
+/// Renvoie le contexte, l'API du cœur et le type du modèle.
+let load (path: string) : CoreAlc * CoreApi * Type =
+  let bytes = File.ReadAllBytes path
   let alc = CoreAlc()
   let asm = alc.LoadFromStream(new MemoryStream(bytes))
-  let m = asm.GetType("Extracted")
-  let fn (n: string) = m.GetMethod(n)
+  let m = asm.GetType("Extracted", true)
+  let fn (n: string) =
+    match m.GetMethod n with
+    | null -> failwith ("fonction absente: " + n)
+    | mi -> mi
   let upd, vw, inp = fn "app_update", fn "app_view", fn "app_msg_of_input"
   let init = m.GetProperty("app_init").GetValue(null)
   let api =
@@ -76,4 +94,4 @@ let load (path: string) : CoreAlc * Assembly * CoreApi * (obj -> Type) =
       Update = fun mo g -> upd.Invoke(null, [| mo; g |])
       View = fun mo -> toNode (vw.Invoke(null, [| mo |]))
       MsgOfInput = fun t s -> inp.Invoke(null, [| t; s |]) }
-  alc, asm, api, (fun _ -> upd.GetParameters().[0].ParameterType)
+  alc, api, upd.GetParameters().[0].ParameterType

@@ -1,0 +1,7 @@
+AOT défaut: fenêtre en ms  1er=123 médiane=109.5 p95=123 min=92 max=123 | RSS repos Ko médiane=116586.0 max=116936
+AOT logiciel: fenêtre en ms  1er=61 médiane=60.0 p95=66 min=52 max=66 | RSS repos Ko médiane=39432.0 max=39924
+JIT défaut: fenêtre en ms  1er=699 médiane=638.5 p95=699 min=567 max=699 | RSS repos Ko médiane=163226.0 max=163364
+JIT logiciel: fenêtre en ms  1er=561 médiane=543.5 p95=592 min=503 max=592 | RSS repos Ko médiane=87874.0 max=87952
+AOT froid (cache de pages vidé, 1 run, rendu défaut): 281 ms
+JIT froid (cache de pages vidé, 1 run, rendu défaut): 1029 ms
+AOT défaut, bibliothèques GL chargées : libGL.so.1.7.0 libGLX.so.0.0.0 libGLX_mesa.so.0.0.0 libGLdispatch.so.0.0.0 libgallium-25.2.8-0ubuntu0.24.04.4.so 

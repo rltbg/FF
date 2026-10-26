@@ -1,35 +1,33 @@
 # F* → F# → Avalonia : test de la boucle de développement
 
-Banc d'essai (F* 2026.10.25, .NET SDK 10.0.403, Avalonia 12.1.4) d'une application MVU dont le modèle,
-`update`, `view` (arbre de vue en donnée) et la validation sont écrits et prouvés en F*, extraits en F#
-(`--codegen FSharp`, backend Custard), puis affichés par un petit interpréteur Avalonia.
-Hot reload en dev (hôte `AssemblyLoadContext`), NativeAOT en release.
+Banc d'essai d'une application MVU dont le modèle, `update`, `view` (arbre de vue en donnée) et la validation sont
+écrits et prouvés en F*, extraits en F# (`--codegen FSharp`, backend Custard), puis affichés par un petit
+interpréteur Avalonia. Rechargement à chaud en dev (hôte `AssemblyLoadContext`), NativeAOT en release.
 
-**Verdict : boucle viable avec contournements mineurs.** Rapport complet : [REPORT.md](REPORT.md).
+Versions : F* 2026.10.25 · .NET SDK 10.0.403 · Avalonia 12.1.4 · FSharp.Core 10.1.403.
+
+**Verdict : boucle viable avec contournements mineurs.** Rapport complet (2e passe, revue contre les documentations) :
+[REPORT.md](REPORT.md).
 
 ## Contenu
-| Dossier | Rôle |
+| Chemin | Rôle |
 |---|---|
-| `fst/Core.fst`, `fst/App.fst` | Logique vérifiée (FNV-1a, analyse décimale bornée, modèle, update, view) |
-| `app/Extracted/` | F# extrait tel quel (`Extracted.fs`) + bibliothèque Custard générée (`FStarCustard.fs`) |
-| `app/Ui/` | Interpréteur générique `Node → contrôles Avalonia` + boucle MVU (seule couche qui connaît Avalonia) |
+| `fst/Core.fst` | FNV-1a 32 bits (spec liste + implémentation `byte[]` prouvée égale, empreinte UTF-8), analyse décimale bornée (correction fonctionnelle prouvée), validation de nom |
+| `fst/App.fst` | Modèle, messages, `update` avec invariant prouvé, `view` → arbre de vue |
+| `app/Extracted/` | F# extrait tel quel + bibliothèque Custard générée (régénérés par `scripts/extract.sh`) |
+| `app/Ui/` | Interpréteur réconciliant `Node` → contrôles Avalonia, boucle MVU, démarrage (`UsePlatformDetect`) |
 | `app/HostStatic/` | Hôte lié statiquement au cœur (JIT et NativeAOT) |
-| `app/HostDev/` | Hôte de dev : recharge `Extracted.dll` à chaud et transfère le modèle |
-| `app/Tests/` | 683 322 vérifications (JIT et AOT) + benchmark (`Tests bench`) |
-| `scripts/` | `loop.sh` (cycle chronométré), `startup.sh` (démarrage + RSS) |
-| `logs/` | Logs bruts (`aot_err.log` = plantage AOT corrigé depuis : `string` sur une union F#) |
-| `shots/` | Captures Xvfb |
+| `app/HostDev/` | Hôte de dev : recharge `Extracted.dll` à chaud, transfère le modèle, mesure le déchargement |
+| `app/Tests/` | 949 803 vérifications (JIT et AOT) ; `Tests bench` pour les micro-mesures |
+| `scripts/` | Voir ci-dessous |
+| `logs/`, `shots/` | Journaux bruts et captures de la dernière exécution |
 
-## Reproduire
+## Utilisation
 ```
-# F* : https://github.com/FStarLang/FStar/releases/download/v2026.10.25/fstar-v2026.10.25-Linux-x86_64.tar.gz
-# .NET : dotnet-install.sh --channel 10.0
-cd fst
-A="--odir _output --cache_dir _cache --already_cached Prims,FStar --warn_error -321"
-fstar.exe $A --cache_checked_modules Core.fst
-fstar.exe $A --cache_checked_modules App.fst
-fstar.exe $A --codegen FSharp --custard_entry_module Core --custard_entry_module App App.fst -o ../app/Extracted/Extracted.fs
-cd ../app && dotnet publish HostStatic -c Release -r linux-x64 -p:PublishAot=true
+scripts/setup.sh        # F* et SDK .NET dans .tools/ (versions épinglées)
+scripts/all.sh          # passe complète depuis zéro : extraction, build + AOT, tests, GUI, rechargement, mutations
 ```
-Les modules F* se vérifient dans l'ordre des dépendances (Core avant App). `scripts/*.sh` contiennent des chemins
-absolus de la machine d'essai (`/home/user/w/...`) à adapter. Interface sous Xvfb (`DISPLAY=:99`), rendu logiciel X11.
+Scripts unitaires : `extract.sh [full|admit|lax]`, `build.sh`, `test.sh`, `ui_smoke.sh <cmd>`, `hotreload.sh`,
+`mutate.sh`, `loop.sh [mode]`, `loop_bench.sh`, `startup.sh <label> <cmd>`, `watch_check.sh`.
+Les tests GUI utilisent Xvfb (`:99`), `xdotool`, `xwininfo`/`xprop` (paquet `x11-utils`) et ImageMagick.
+`MVU_SOFTWARE_RENDERING=1` force le rendu X11 logiciel ; `MVU_TRACE=<fichier>` journalise le modèle après chaque rendu.

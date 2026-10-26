@@ -2,85 +2,89 @@ module Program
 
 open System
 open System.IO
-open Avalonia
-open Avalonia.Controls
+open System.Runtime.CompilerServices
 open Avalonia.Threading
-open Avalonia.X11
 open Ui
-open Reload
 
 let stamp () = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 
+/// Signature du fichier surveillé. Sondage plutôt que FileSystemWatcher : dans le conteneur de test,
+/// la réécriture de la DLL par MSBuild ne produisait aucun événement inotify (un `touch` en produisait).
+let fileSig (path: string) =
+  let fi = FileInfo path
+  if fi.Exists then fi.LastWriteTimeUtc.Ticks ^^^ fi.Length else 0L
+
+/// Combien des anciens contextes sont encore vivants après GC (déchargement coopératif, doc .NET).
+[<MethodImpl(MethodImplOptions.NoInlining)>]
+let aliveAfterGc (olds: ResizeArray<WeakReference>) =
+  for _ in 1 .. 10 do
+    GC.Collect()
+    GC.WaitForPendingFinalizers()
+  [ for i in 0 .. olds.Count - 1 do if olds.[i].IsAlive then yield i ]
+
+/// Textes affichés (aplatis) : oracle des tests de rechargement.
+let rec texts (n: Node) : string list =
+  match n with
+  | Column xs | Row xs -> List.collect texts xs
+  | Heading s | Text s -> [ s ]
+  | Button (l, _) | Check (l, _, _) -> [ l ]
+  | Input (_, v, _) -> [ v ]
+
 [<EntryPoint>]
 let main argv =
-  let path = argv.[0]
+  if argv.Length < 1 then failwith "usage: HostDev <Extracted.dll> [journal]"
+  let path = Path.GetFullPath argv.[0]
   let logPath = if argv.Length > 1 then argv.[1] else "/dev/null"
   let log (s: string) = File.AppendAllText(logPath, string (stamp ()) + " " + s + "\n")
-  let mutable alc : CoreAlc = Unchecked.defaultof<_>
-  let mutable modelType : Type = null
-  let mutable runner : Runner = Unchecked.defaultof<_>
-  let reload () =
+  let olds = ResizeArray<WeakReference>()
+  let current : Reload.CoreAlc ref = ref Unchecked.defaultof<_>
+
+  let reload (r: Runner) =
     let t0 = stamp ()
-    let a, _, api, mt = load path
-    let newType = mt null
-    let keep =
-      if isNull (box runner) then Choice1Of2 api.Init
-      else
-        try Choice1Of2 (transplant runner.Model newType)
-        with TransplantFailed why -> Choice2Of2 why
-    let oldAlc = alc
-    alc <- a; modelType <- newType
-    match keep with
-    | Choice1Of2 m ->
-      if not (isNull (box runner)) then runner.Model <- m
-      if not (isNull (box runner)) then (runner.Api <- api; runner.Render())
-      log ("reloaded model-kept ms=" + string (stamp () - t0))
-      api
-    | Choice2Of2 why ->
-      runner.Api <- api; runner.Model <- api.Init; runner.Render()
-      log ("reloaded model-RESET (" + why + ") ms=" + string (stamp () - t0))
-      api
-    |> fun api ->
-      if not (isNull (box oldAlc)) then oldAlc.Unload()
-      api
-  UiApp.OnReady <- fun lt ->
-    let w = Window(Title = "F* MVU", Width = 520.0, Height = 560.0)
-    let a, _, api, mt = load path
-    alc <- a; modelType <- mt null
-    runner <- Runner(api, w)
-    lt.MainWindow <- w
-    w.Opened.Add(fun _ -> runner.Render(); log "ready")
-    let dir = Path.GetDirectoryName(Path.GetFullPath path)
-    let fsw = new FileSystemWatcher(dir, Path.GetFileName path)
-    fsw.NotifyFilter <- NotifyFilters.LastWrite ||| NotifyFilters.Size ||| NotifyFilters.FileName
-    let mutable pending = 0L
-    let onEvt (_: obj) =
-      log "event"
-      let me = stamp ()
-      pending <- me
-      Threading.Tasks.Task.Delay(150).ContinueWith(fun _ ->
-        if pending = me then
-          log "change-detected"
-          Dispatcher.UIThread.Post(fun () ->
-            try reload () |> ignore with e -> log ("reload-error " + e.Message)))
-      |> ignore
-    // sondage de secours : les réécritures de contenu par MSBuild ne notifient pas inotify ici
-    let fileSig () = let fi = FileInfo path in if fi.Exists then fi.LastWriteTimeUtc.Ticks + fi.Length else 0L
-    let mutable last = fileSig ()
-    let timer = new System.Timers.Timer(250.0)
+    let alc, api, modelType = Reload.load path
+    let model, status =
+      match Reload.tryTransplant r.Model modelType with
+      | Ok m -> m, "model-kept"
+      | Error why -> api.Init, "model-RESET (" + why + ")"
+    r.Swap(api, model)
+    current.Value.Unload()
+    olds.Add(WeakReference current.Value)
+    current.Value <- alc
+    log ("reloaded " + status + " ms=" + string (stamp () - t0))
+
+  /// Premier chargement, une fois la fenêtre ouverte (boucle du dispatcher active).
+  let start (w: Avalonia.Controls.Window) =
+    let alc, api, _ = Reload.load path
+    current.Value <- alc
+    let r = Runner(api, w)
+    r.OnRender <- fun m -> log ("render " + String.Join(" | ", texts (r.CurrentApi.View m)))
+    r.Render()
+    log "ready"
+    // rechargement quand la signature a changé puis est restée stable pendant une période (écriture finie)
+    let seen = ref (fileSig path)
+    let loaded = ref seen.Value
+    let timer = new Timers.Timer(200.0)
     timer.Elapsed.Add(fun _ ->
-      let n = fileSig ()
-      if n <> last then
-        last <- n
-        onEvt null)
+      let s = fileSig path
+      if s <> seen.Value then seen.Value <- s
+      elif s <> loaded.Value && s <> 0L then
+        loaded.Value <- s
+        log "change-detected"
+        Dispatcher.UIThread.Post(fun () ->
+          try reload r with e -> log ("reload-error " + e.GetType().Name + ": " + e.Message)))
     timer.Start()
-    fsw.Changed.Add(onEvt); fsw.Created.Add(onEvt); fsw.Renamed.Add(onEvt)
-    fsw.Error.Add(fun e -> log ("fsw-error " + e.GetException().Message))
-    fsw.EnableRaisingEvents <- true
-    log ("watching " + dir + " " + string fsw.EnableRaisingEvents)
-  AppBuilder.Configure<UiApp>()
-    .UseX11()
-    .UseSkia()
-    .UseHarfBuzz()
-    .With(X11PlatformOptions(RenderingMode = [| X11RenderingMode.Software |]))
-    .StartWithClassicDesktopLifetime([||])
+    // contrôle périodique du déchargement (journalisé seulement quand le nombre change)
+    let lastAlive = ref ""
+    DispatcherTimer.Run((fun () ->
+      if olds.Count > 0 then
+        let alive = aliveAfterGc olds
+        let txt = string alive.Length + "/" + string olds.Count + " vivants=" + String.Join(",", alive)
+        if txt <> lastAlive.Value then
+          lastAlive.Value <- txt
+          log ("alc-alive " + txt)
+      true), TimeSpan.FromSeconds 2.0) |> ignore
+
+  Startup.run [||] (fun lt ->
+    let w = Startup.newWindow ()
+    lt.MainWindow <- w
+    w.Opened.Add(fun _ -> start w))

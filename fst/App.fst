@@ -1,8 +1,8 @@
 module App
 (* Modèle MVU : Model, Msg, update (pure, avec invariant prouvé), view -> ViewTree (donnée). *)
 module U32 = FStar.UInt32
-module U8  = FStar.UInt8
-module C   = FStar.Char
+module I32 = FStar.Int32
+module Str = FStar.String
 open FStar.List.Tot
 
 type tab = | TCounter | TItems | TForm
@@ -25,7 +25,7 @@ type form_status =
 
 type model = {
   tab: tab;
-  counter: int;
+  counter: I32.t;        (* borné à [-1000, 1000] *)
   items: list item;       (* ids strictement décroissants, tous < next_id *)
   next_id: U32.t;
   draft: string;
@@ -35,7 +35,7 @@ type model = {
 }
 
 (* ---------- invariants ---------- *)
-let counter_ok (c:int) : bool = -1000 <= c && c <= 1000
+let counter_ok (c:I32.t) : bool = I32.gte c (-1000l) && I32.lte c 1000l
 
 let rec sorted_below (n:U32.t) (l:list item) : Tot bool (decreases l) =
   match l with
@@ -46,7 +46,7 @@ let inv (m:model) : bool =
   counter_ok m.counter && sorted_below m.next_id m.items && U32.lt m.next_id 0xFFFFFFFFul
 
 let init : (m:model{inv m}) =
-  { tab = TCounter; counter = 0; items = []; next_id = 0ul; draft = "";
+  { tab = TCounter; counter = 0l; items = []; next_id = 0ul; draft = "";
     name = ""; age = ""; status = Editing }
 
 (* ---------- opérations sur la liste ---------- *)
@@ -92,29 +92,28 @@ let rec lemma_drop (n:U32.t) (l:list item)
     | x :: t -> lemma_drop x.id t; if x.checked then lemma_weaken x.id n t else ()
 
 (* ---------- validation du formulaire (réutilise Core) ---------- *)
-let to_u8 (c:C.char) : U8.t = U8.uint_to_t (C.int_of_char c % 256)
-let bytes_of (s:string) : list U8.t = map to_u8 (FStar.String.list_of_string s)
+let err_name = "nom : 1 à 20 caractères, sans caractère de contrôle"
+let err_age  = "âge : entier décimal entre 0 et 150"
 
+(* Empreinte = FNV-1a 32 bits de l'encodage UTF-8 du nom. *)
 let submit_form (name age:string) : form_status =
-  let nm = FStar.String.list_of_string name in
-  let ok_name = Core.name_ok nm in
-  match Core.parse_age (FStar.String.list_of_string age) with
+  let ok_name = Core.name_ok (Str.list_of_string name) in
+  match Core.parse_age (Str.list_of_string age) with
   | Some a ->
-    if ok_name then Accepted (name, a, Core.fnv (bytes_of name))
-    else Rejected ["nom: 1 à 20 caractères imprimables"]
+    if ok_name then (Core.lemma_name_ok_maxlen name; Accepted (name, a, Core.fnv_utf8 name))
+    else Rejected [err_name]
   | None ->
-    if ok_name then Rejected ["âge: entier entre 0 et 150"]
-    else Rejected ["nom: 1 à 20 caractères imprimables"; "âge: entier entre 0 et 150"]
+    if ok_name then Rejected [err_age] else Rejected [err_name; err_age]
 
 (* ---------- update ---------- *)
 let update (m:model{inv m}) (g:msg) : (m':model{inv m'}) =
   match g with
-  | Inc -> if m.counter < 1000 then { m with counter = m.counter + 1 } else m
-  | Dec -> if m.counter > -1000 then { m with counter = m.counter - 1 } else m
-  | Reset -> { m with counter = 0 }
+  | Inc -> if I32.lt m.counter 1000l then { m with counter = I32.add m.counter 1l } else m
+  | Dec -> if I32.gt m.counter (-1000l) then { m with counter = I32.sub m.counter 1l } else m
+  | Reset -> { m with counter = 0l }
   | Goto t -> { m with tab = t }
   | AddItem ->
-    if Core.name_ok (FStar.String.list_of_string m.draft) && U32.lt m.next_id 0xFFFFFFFEul then
+    if Core.name_ok (Str.list_of_string m.draft) && U32.lt m.next_id 0xFFFFFFFEul then
       { m with items = { id = m.next_id; text = m.draft; checked = false } :: m.items;
                next_id = U32.add m.next_id 1ul; draft = "" }
     else m
@@ -127,19 +126,26 @@ let update (m:model{inv m}) (g:msg) : (m':model{inv m'}) =
   | Submit -> { m with status = submit_form m.name m.age }
 
 (* lemmes d'application *)
-let lemma_inc_dec (m:model{inv m /\ m.counter < 1000})
+let lemma_inc_dec (m:model{inv m /\ I32.v m.counter < 1000})
   : Lemma ((update (update m Inc) Dec).counter == m.counter) = ()
 
-let lemma_add_grows (m:model{inv m /\ Core.name_ok (FStar.String.list_of_string m.draft) /\ U32.v m.next_id < 0xFFFFFFFE})
+let lemma_add_grows (m:model{inv m /\ Core.name_ok (Str.list_of_string m.draft) /\ U32.v m.next_id < 0xFFFFFFFE})
   : Lemma (length (update m AddItem).items == length m.items + 1) = ()
 
 let lemma_remove_gone (m:model{inv m}) (k:U32.t)
   : Lemma (not (mem_id k (update m (Remove k)).items)) = lemma_remove k m.next_id m.items
 
+(* Accepté <=> nom valide et âge analysé ; l'empreinte est exactement FNV-1a(UTF-8(nom)). *)
 let lemma_accepted_valid (m:model{inv m})
   : Lemma (match (update m Submit).status with
-           | Accepted (_, a, _) -> U32.v a <= 150
-           | _ -> True) = ()
+           | Accepted (n, a, h) ->
+             n == m.name /\ Core.name_ok (Str.list_of_string n) /\
+             Core.parse_age (Str.list_of_string m.age) == Some a /\ U32.v a <= 150 /\
+             Str.maxlen n (pow2 30) /\ h == Core.fnv_utf8 n
+           | Rejected _ ->
+             ~(Core.name_ok (Str.list_of_string m.name)) \/ None? (Core.parse_age (Str.list_of_string m.age))
+           | Editing -> False)
+  = if Core.name_ok (Str.list_of_string m.name) then Core.lemma_name_ok_maxlen m.name
 
 (* ---------- view : donnée pure ---------- *)
 type view_tree =
@@ -162,7 +168,7 @@ let tab_bar (t:tab) : view_tree =
 
 let view_counter (m:model) : view_tree =
   VColumn [ VHeading "Compteur";
-            VText ("Valeur : " ^ string_of_int m.counter);
+            VText ("Valeur : " ^ I32.to_string m.counter);
             VRow [ VButton ("−", Dec); VButton ("+", Inc); VButton ("Reset", Reset) ] ]
 
 let view_items (m:model) : view_tree =

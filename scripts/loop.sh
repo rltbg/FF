@@ -1,19 +1,20 @@
-#!/bin/bash
-# usage: loop.sh [full|lax] [build-target-dir]  -- chronomètre chaque étape de la boucle F* -> F#
-export PATH=/home/user/w/dotnet:/home/user/w/fstar/fstar/bin:$PATH DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_ROOT=/home/user/w/dotnet
-MODE=${1:-full}; PROJ=/home/user/w/proj; cd $PROJ/fst
-CD=_cache; [ "$MODE" = lax ] && CD=_cache_lax
-A="--odir _output --cache_dir $CD --already_cached Prims,FStar --warn_error -321"
-[ "$MODE" = lax ] && A="$A --admit_smt_queries true"
-now() { date +%s.%N; }
+#!/usr/bin/env bash
+# Un tour de boucle chronométré : vérification F* -> extraction -> compilation de Extracted.dll.
+# usage : loop.sh [full|admit|lax]
+set -euo pipefail
+source "$(dirname "$0")/env.sh"
+MODE=${1:-full}; fstar_mode $MODE
+L="$ROOT/logs/loop"; mkdir -p "$L"
+now() { date +%s%N; }
 t0=$(now)
-(fstar.exe $A --cache_checked_modules Core.fst && fstar.exe $A --cache_checked_modules App.fst) > $PROJ/loop.check.log 2>&1 || { echo "CHECK FAILED"; tail -15 $PROJ/loop.check.log; exit 1; }
+cd "$ROOT/fst"
+for m in Core App; do fstar.exe "${FA[@]}" --cache_checked_modules $m.fst >> "$L/check.log" 2>&1 || { echo "VÉRIFICATION KO"; tail -20 "$L/check.log"; exit 1; }; done
 t1=$(now)
-rm -rf $PROJ/gen; mkdir -p $PROJ/gen
-fstar.exe $A --codegen FSharp --custard_entry_module Core --custard_entry_module App App.fst -o $PROJ/gen/Extracted.fs > $PROJ/loop.extract.log 2>&1 || { echo "EXTRACT FAILED"; tail -15 $PROJ/loop.extract.log; exit 1; }
+out=$(mktemp -d)
+fstar.exe "${FA[@]}" --codegen FSharp --custard_entry_module Core --custard_entry_module App App.fst -o "$out/Extracted.fs" >> "$L/extract.log" 2>&1 || { echo "EXTRACTION KO"; tail -20 "$L/extract.log"; exit 1; }
+cp "$out"/Extracted.fs "$out"/FStarCustard.fs "$out"/Extracted.fsproj "$ROOT/app/Extracted/"; rm -rf "$out"
 t2=$(now)
-cp $PROJ/gen/Extracted.fs $PROJ/app/Extracted/Extracted.fs
-cd $PROJ/app
-dotnet build Extracted -c Release --nologo > $PROJ/loop.build.log 2>&1 || { echo "BUILD FAILED"; grep -E "error" $PROJ/loop.build.log | head; exit 1; }
+dotnet build "$ROOT/app/Extracted" -c Release --nologo > "$L/build.log" 2>&1 || { echo "COMPILATION KO"; grep -E "error" "$L/build.log" | head; exit 1; }
 t3=$(now)
-printf "mode=%s check=%.2fs extract=%.2fs build=%.2fs total=%.2fs\n" $MODE $(echo "$t1-$t0"|bc) $(echo "$t2-$t1"|bc) $(echo "$t3-$t2"|bc) $(echo "$t3-$t0"|bc)
+ms() { echo $(( ($2 - $1) / 1000000 )); }
+echo "mode=$MODE verif_ms=$(ms $t0 $t1) extraction_ms=$(ms $t1 $t2) build_ms=$(ms $t2 $t3) total_ms=$(ms $t0 $t3)"

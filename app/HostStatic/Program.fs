@@ -1,11 +1,9 @@
 module Program
 
-open Avalonia
-open Avalonia.Controls
-open Avalonia.X11
 open Ui
 open Extracted
 
+/// Seule colle entre l'arbre de vue extrait de F* et l'interpréteur générique.
 let rec toNode (v: app_view_tree) : Node =
   match v with
   | App_VColumn xs -> Column (List.map toNode xs)
@@ -22,16 +20,25 @@ let api : CoreApi =
     View = fun m -> toNode (app_view (unbox m))
     MsgOfInput = fun t s -> box (app_msg_of_input (unbox t) s) }
 
+/// Résumé du modèle pour le journal de test (MVU_TRACE) ; concaténation typée, sans réflexion.
+let describe (m: app_model) =
+  let tab = match m.tab with App_TCounter -> "counter" | App_TItems -> "items" | App_TForm -> "form"
+  let items = m.items |> List.map (fun i -> i.text + (if i.``checked`` then "[x]" else "[ ]")) |> String.concat ","
+  let status =
+    match m.status with
+    | App_Editing -> "editing"
+    | App_Rejected es -> "rejected:" + String.concat "|" es
+    | App_Accepted (n, a, h) -> "accepted:" + n + "," + string a + "," + string h
+  "tab=" + tab + " counter=" + string m.counter + " items=" + items + " draft=" + m.draft
+  + " name=" + m.name + " age=" + m.age + " status=" + status
+
 [<EntryPoint>]
 let main argv =
-  UiApp.OnReady <- fun lt ->
-    let w = Window(Title = "F* MVU", Width = 520.0, Height = 560.0)
+  Startup.run argv (fun lt ->
+    let w = Startup.newWindow ()
     let r = Runner(api, w)
+    match System.Environment.GetEnvironmentVariable "MVU_TRACE" with
+    | null | "" -> ()
+    | path -> r.OnRender <- fun m -> System.IO.File.AppendAllText(path, describe (unbox m) + "\n")
     lt.MainWindow <- w
-    w.Opened.Add(fun _ -> r.Render())
-  AppBuilder.Configure<UiApp>()
-    .UseX11()
-    .UseSkia()
-    .UseHarfBuzz()
-    .With(X11PlatformOptions(RenderingMode = [| X11RenderingMode.Software |]))
-    .StartWithClassicDesktopLifetime(argv)
+    w.Opened.Add(fun _ -> r.Render()))

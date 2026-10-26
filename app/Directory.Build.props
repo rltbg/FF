@@ -1,0 +1,7 @@
+<Project>
+  <!-- Doc Avalonia Native AOT : IsAotCompatible sur toutes les bibliothèques (active les analyseurs trim/AOT).
+       S'applique aussi au projet Extracted.fsproj généré par F*. HostDev (réflexion, dev seulement) est exclu. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'HostDev'">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+</Project>

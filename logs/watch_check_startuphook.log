@@ -1,0 +1,14 @@
+[F# extrait] 7520 ms :
+    dotnet watch ⌚ File updated: ./Extracted/Extracted.fs
+    dotnet watch 🔥 Restart is needed to apply the changes.
+    dotnet watch ⌚ [HostStatic (net10.0)] Exited
+    dotnet watch ⌚ Loading projects ...
+    dotnet watch ⌚ Loaded 3 project(s) in 0.3s.
+    dotnet watch ⌚ Waiting for changes
+[F# à la main (Interp.fs)] 5609 ms :
+    dotnet watch ⌚ File updated: ./Ui/Interp.fs
+    dotnet watch 🔥 Restart is needed to apply the changes.
+    dotnet watch ⌚ [HostStatic (net10.0)] Exited
+    dotnet watch ⌚ Loading projects ...
+    dotnet watch ⌚ Loaded 3 project(s) in 0.2s.
+    dotnet watch ⌚ Waiting for changes

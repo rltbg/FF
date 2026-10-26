@@ -1,0 +1,124 @@
+
+######## setup
+F* 2026.10.25
+10.0.403
+######## durée 0 s
+
+######## vérification + extraction
+Verified module: Core
+All verification conditions discharged successfully
+Verified module: App
+All verification conditions discharged successfully
+Verified module: App
+All verification conditions discharged successfully
+######## durée 5 s
+
+######## compilation + NativeAOT
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:09.92
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.50
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.78
+  Ui -> /home/user/ff/app/Ui/bin/Release/net10.0/Ui.dll
+  Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
+  HostStatic -> /home/user/ff/app/HostStatic/bin/Release/net10.0/linux-x64/HostStatic.dll
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/HostStatic/HostStatic.fsproj]
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/HostStatic/HostStatic.fsproj]
+  HostStatic -> /home/user/ff/out/HostStatic/
+  Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
+  Tests -> /home/user/ff/app/Tests/bin/Release/net10.0/linux-x64/Tests.dll
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/Tests/Tests.fsproj]
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/Tests/Tests.fsproj]
+  Tests -> /home/user/ff/out/Tests/
+######## durée 98 s
+
+######## tests JIT + AOT
+JIT: checks=949803 fails=0
+AOT: checks=949803 fails=0
+######## durée 1 s
+
+######## GUI AOT
+OK fenêtre _NET_WM_PID=15303 = PID 15303
+OK [compteur] counter=2
+OK [onglet] tab=items
+OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
+OK [cocher] items=poires[x],pommes[ ]
+OK [supprimer] items=pommes[ ] 
+OK [accepte] status=accepted:Ada Lovelace,36,4267605246
+OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
+rendus journalisés : 68 ; RSS : 116236 Ko
+SMOKE OK
+######## durée 13 s
+
+######## GUI JIT
+OK fenêtre _NET_WM_PID=15474 = PID 15474
+OK [compteur] counter=2
+OK [onglet] tab=items
+OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
+OK [cocher] items=poires[x],pommes[ ]
+OK [supprimer] items=pommes[ ] 
+OK [accepte] status=accepted:Ada Lovelace,36,4267605246
+OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
+rendus journalisés : 68 ; RSS : 176524 Ko
+SMOKE OK
+######## durée 14 s
+
+######## rechargement à chaud
+OK [état] « Valeur : 3 »
+[A] mode=full verif_ms=2946 extraction_ms=1053 build_ms=5791 total_ms=9791 | sauvegarde->rendu_ms=10017 | reloaded model-kept ms=33
+OK [A] « Valeur HOT : 3 »
+[B] mode=full verif_ms=2908 extraction_ms=739 build_ms=4825 total_ms=8474 | sauvegarde->rendu_ms=8720 | reloaded model-kept ms=12
+OK [B] « Valeur HOT : 10 »
+[C] mode=full verif_ms=2974 extraction_ms=852 build_ms=5348 total_ms=9175 | sauvegarde->rendu_ms=9464 | reloaded model-RESET (champs changés: app_model) ms=12
+OK [C] « Valeur HOT : 0 »
+OK [C] modèle réinitialisé : model-RESET (champs changés: app_model)
+[D] mode=lax verif_ms=1439 extraction_ms=969 build_ms=5129 total_ms=7539 | sauvegarde->rendu_ms=7850 | reloaded model-kept ms=10
+OK [D] « Valeur LAX : 1 »
+après D, sans interaction : alc-alive 1/4 vivants=0
+déchargement ALC : alc-alive 1/4 vivants=0 (vivants/remplacés après GC)
+RSS HostDev : 177328 Ko
+HOTRELOAD OK
+######## durée 66 s
+
+######## mutations
+== M1 constante FNV
+F* (preuves complètes) : ACCEPTÉE
+FAIL: fnv = ref
+FAIL: fnv_utf8 = ref
+checks=949803 fails=37972
+=> détectée par les tests
+== M2 borne d'âge 151
+F* (preuves complètes) : REJETÉE
+* Error 19 at Core.fst(119,36-119,37):
+  - Expected type n: FStar.UInt32.t{FStar.UInt32.v n <= 150}
+    got type n: FStar.UInt32.t{FStar.UInt32.v n <= 1000}
+  - Failed to prove: FStar.UInt32.v n <= 150
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: age diff 151
+FAIL: age diff 151
+checks=949803 fails=10
+=> détectée aussi par les tests
+== M3 règle printable
+F* (preuves complètes) : ACCEPTÉE
+FAIL: nom C1 0x9F
+FAIL: printable 159
+checks=949803 fails=2
+=> détectée par les tests
+MUTATIONS : toutes détectées
+######## durée 56 s
+
+TOUT OK

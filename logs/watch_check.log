@@ -1,0 +1,16 @@
+[F# extrait] 7225 ms :
+    dotnet watch ⌚ File updated: ./Extracted/Extracted.fs
+    dotnet watch 🔥 Restart is needed to apply the changes.
+    dotnet watch ❌ [HostStatic (net10.0)] Exited with error code 143
+    dotnet watch ⌚ Loading projects ...
+    dotnet watch ⌚ Loaded 3 project(s) in 0.4s.
+    dotnet watch ⚠ [HostStatic (net10.0)] Project does not support Hot Reload: 'PublishAot' property is 'True'. Application will be restarted when updated. Set 'StartupHookSupport' project property to 'True' to enable Hot Reload.
+    dotnet watch ⌚ Waiting for changes
+[F# à la main (Interp.fs)] 5639 ms :
+    dotnet watch ⌚ File updated: ./Ui/Interp.fs
+    dotnet watch 🔥 Restart is needed to apply the changes.
+    dotnet watch ❌ [HostStatic (net10.0)] Exited with error code 143
+    dotnet watch ⌚ Loading projects ...
+    dotnet watch ⌚ Loaded 3 project(s) in 0.3s.
+    dotnet watch ⚠ [HostStatic (net10.0)] Project does not support Hot Reload: 'PublishAot' property is 'True'. Application will be restarted when updated. Set 'StartupHookSupport' project property to 'True' to enable Hot Reload.
+    dotnet watch ⌚ Waiting for changes
