@@ -13,7 +13,7 @@ OUT="$ROOT/out/platforms"; mkdir -p "$OUT" "$ROOT/logs"
 ASDK="$ROOT/.tools/android-sdk"
 HOSTRID=$(dotnet --info | awk '/RID:/{print $2; exit}')
 RIDS=(win-x64 win-arm64 osx-x64 osx-arm64 linux-x64 linux-arm64 linux-musl-x64 linux-musl-arm64)
-targets=("$@"); [ ${#targets[@]} -eq 0 ] && targets=("${RIDS[@]}" aot browser android ios)
+targets=("$@"); [ ${#targets[@]} -eq 0 ] && targets=("${RIDS[@]}" aot browser android android-naot ios)
 : > "$ROOT/logs/platforms.tsv"
 rec() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" | tee -a "$ROOT/logs/platforms.tsv" >/dev/null; printf '%-18s %-9s %-8s %s\n' "$1" "$2" "$3" "$4"; }
 size() { du -sh "$1" 2>/dev/null | cut -f1; }
@@ -46,6 +46,15 @@ for t in "${targets[@]}"; do
       if [ ! -d "$ASDK/platforms" ]; then rec android APK SAUTÉ "SDK Android absent : ACCEPT_ANDROID_LICENSES=1 scripts/platforms_setup.sh"
       elif dotnet publish "$ROOT/app/HostAndroid" -c Release --nologo -p:AndroidSdkDirectory="$ASDK" -o "$d" > "$OUT/android.log" 2>&1 && ls "$d"/*-Signed.apk >/dev/null 2>&1; then rec android APK BUILT "$(ls "$d"/*-Signed.apk | head -1 | xargs du -h | cut -f1) ; $(basename "$(ls "$d"/*-Signed.apk | head -1)")"
       else rec android APK ÉCHEC "$(grep -m1 -E 'error' "$OUT/android.log" | sed 's|.*/||' | cut -c1-160)"; fi ;;
+    android-naot)
+      NDK="$ASDK/ndk/27.2.12479018"
+      for abi in android-arm64 android-x64; do
+        d="$OUT/android-naot-$abi"; rm -rf "$d"
+        if [ ! -d "$NDK" ]; then rec "$abi" NativeAOT SAUTÉ "NDK r27 absent : ACCEPT_ANDROID_LICENSES=1 scripts/platforms_setup.sh"
+        elif dotnet publish "$ROOT/app/HostAndroid" -c Release -r "$abi" -p:AndroidNativeAot=true --nologo -p:AndroidSdkDirectory="$ASDK" -p:AndroidNdkDirectory="$NDK" -o "$d" > "$OUT/$abi-naot.log" 2>&1 && ls "$d"/*-Signed.apk >/dev/null 2>&1; then
+          rec "$abi" NativeAOT BUILT "$(du -h "$d"/*-Signed.apk | head -1 | cut -f1) ; $(unzip -l "$d"/*-Signed.apk | grep -c 'libHostAndroid.so') lib native managée ; expérimental, jamais lancé"
+        else rec "$abi" NativeAOT ÉCHEC "$(grep -m1 -E 'error' "$OUT/$abi-naot.log" | sed 's|.*/||' | cut -c1-160)"; fi
+      done ;;
     ios)
       if [ "$(uname)" != Darwin ]; then rec ios-arm64 app SAUTÉ "exige macOS + Xcode + workload ios ; projet app/HostIOS écrit, jamais compilé"
       elif dotnet build "$ROOT/app/HostIOS" -c Release --nologo > "$OUT/ios.log" 2>&1; then rec ios-arm64 app BUILT "voir out/platforms/ios.log"

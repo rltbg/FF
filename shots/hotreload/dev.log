@@ -1,30 +1,30 @@
-1792996512516 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 0 | − | + | Reset
-1792996512517 ready
-1792996513933 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 1 | − | + | Reset
-1792996514386 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 2 | − | + | Reset
-1792996514895 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 3 | − | + | Reset
-1792996526717 change-detected
-1792996526767 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 3 | − | + | Reset
-1792996526768 reloaded model-kept ms=50
-1792996528553 alc-alive 0/1 vivants=
-1792996537918 change-detected
-1792996537935 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 3 | − | + | Reset
-1792996537935 reloaded model-kept ms=17
-1792996537987 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 10 | − | + | Reset
-1792996538661 alc-alive 0/2 vivants=
-1792996550116 change-detected
-1792996550127 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 0 | − | + | Reset
-1792996550127 reloaded model-RESET (champs changés: app_model) ms=11
-1792996550564 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 1 | − | + | Reset
-1792996550798 alc-alive 0/3 vivants=
-1792996559716 change-detected
-1792996559728 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur LAX : 1 | − | + | Reset
-1792996559728 reloaded model-kept ms=11
-1792996560157 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Aucune ligne sélectionnée | BigList 0/100000 sel=-1 | BigText 1/38000 | Texte non haché
-1792996560659 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Ligne sélectionnée : 2 | BigList 0/100000 sel=2 | BigText 1/38000 | Texte non haché
-1792996560928 alc-alive 0/4 vivants=
-1792996561534 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Ligne sélectionnée : 2 | BigList 0/100000 sel=2 | BigText 1/38000 | Texte 1 : 832080 caractères, FNV-1a 1791175457
-1792996563117 change-detected
-1792996563141 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Ligne sélectionnée : 2 | BigList 0/100000 sel=2 | BigText 1/38000 | Texte 1 : 832080 caractères, FNV-1a 1791175457
-1792996563141 reloaded model-kept ms=23
-1792996565005 alc-alive 0/5 vivants=
+1793016837226 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 0 | − | + | Reset
+1793016837226 ready
+1793016838643 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 1 | − | + | Reset
+1793016839097 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 2 | − | + | Reset
+1793016839605 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur : 3 | − | + | Reset
+1793016849229 change-detected
+1793016849259 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 3 | − | + | Reset
+1793016849259 reloaded model-kept ms=28
+1793016851264 alc-alive 0/1 vivants=
+1793016859029 change-detected
+1793016859042 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 3 | − | + | Reset
+1793016859042 reloaded model-kept ms=13
+1793016859060 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 10 | − | + | Reset
+1793016859360 alc-alive 0/2 vivants=
+1793016868828 change-detected
+1793016868839 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 0 | − | + | Reset
+1793016868839 reloaded model-RESET (champs changés: app_model) ms=11
+1793016869272 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur HOT : 1 | − | + | Reset
+1793016869483 alc-alive 0/3 vivants=
+1793016877028 change-detected
+1793016877037 render ● Compteur | Liste | Formulaire | Volumes | Compteur | Valeur LAX : 1 | − | + | Reset
+1793016877037 reloaded model-kept ms=9
+1793016877462 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Aucune ligne sélectionnée | BigList 0/100000 sel=-1 | BigText 1/38000 | Texte non haché
+1793016877590 alc-alive 0/4 vivants=
+1793016877972 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Ligne sélectionnée : 2 | BigList 0/100000 sel=2 | BigText 1/38000 | Texte non haché
+1793016878829 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Ligne sélectionnée : 2 | BigList 0/100000 sel=2 | BigText 1/38000 | Texte 1 : 832080 caractères, FNV-1a 1791175457
+1793016880429 change-detected
+1793016880445 render Compteur | Liste | Formulaire | ● Volumes | Gros volumes | Ligne sélectionnée : 2 | BigList 0/100000 sel=2 | BigText 1/38000 | Texte 1 : 832080 caractères, FNV-1a 1791175457
+1793016880445 reloaded model-kept ms=16
+1793016881669 alc-alive 0/5 vivants=

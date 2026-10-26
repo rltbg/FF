@@ -15,3 +15,330 @@ Autres sources utiles : paquets NuGet (~/.nuget/packages/*/lib/*/*.xml pour la d
 ######## durée 0 s
 
 ######## vérification + extraction
+Verified module: Core
+All verification conditions discharged successfully
+Verified module: Big
+All verification conditions discharged successfully
+Verified module: App
+All verification conditions discharged successfully
+Verified module: App
+All verification conditions discharged successfully
+######## durée 13 s
+
+######## compilation + NativeAOT
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:23.95
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.39
+  Ui -> /home/user/ff/app/Ui/bin/Release/net10.0/Ui.dll
+  Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
+  UiDesktop -> /home/user/ff/app/UiDesktop/bin/Release/net10.0/UiDesktop.dll
+  Shell -> /home/user/ff/app/Shell/bin/Release/net10.0/Shell.dll
+  HostStatic -> /home/user/ff/app/HostStatic/bin/Release/net10.0/linux-x64/HostStatic.dll
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/HostStatic/HostStatic.fsproj]
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/HostStatic/HostStatic.fsproj]
+  HostStatic -> /home/user/ff/out/HostStatic/
+######## durée 87 s
+
+######## tests F* (JIT + AOT)
+vérifié : TUtil TCore TBig TApp TList TMachineLib TMachine TString TBytes TIO TUlib TFloat TMain
+extrait : 8549 lignes F# générées, 471 appels de check
+== JIT
+machine : exécutés=202055 ignorés (précondition)=30688
+checks=1490342 fails=0
+IO : sortie conforme à ftests/IO.expected (39 lignes)
+  TMain -> /home/user/ff/out/ftests/fs/bin/Release/net10.0/linux-x64/TMain.dll
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/out/ftests/fs/TMain.fsproj]
+/root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/out/ftests/fs/TMain.fsproj]
+  TMain -> /home/user/ff/out/ftests/aot/
+== AOT
+machine : exécutés=202055 ignorés (précondition)=30688
+checks=1490342 fails=0
+IO : sortie conforme à ftests/IO.expected (39 lignes)
+couverture des réalisations : 187 réalisations déclarées ; 171 exercées par la suite ; 16 bloquées ou éliminées (raison dans le tableau) ; 0 non exercées.
+######## durée 87 s
+
+######## GUI AOT
+OK fenêtre _NET_WM_PID=15379 = PID 15379
+OK [compteur] counter=2
+OK [onglet] tab=items
+OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
+OK [cocher] items=poires[x],pommes[ ]
+OK [supprimer] items=pommes[ ] 
+OK [accepte] status=accepted:Ada Lovelace,36,4267605246
+OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
+OK [volumes] tab=big
+OK [select ligne 3] sel=2 digest=-
+OK [fin de liste] sel=99999
+OK [hachage 1 Mo par F*] digest=1,832080,1791175457
+RSS : 115 Mo avant l'onglet Volumes, 114 Mo juste après ; 138 Mo en fin de test
+rendus journalisés : 72
+SMOKE OK
+######## durée 18 s
+
+######## GUI JIT
+OK fenêtre _NET_WM_PID=15588 = PID 15588
+OK [compteur] counter=2
+OK [onglet] tab=items
+OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
+OK [cocher] items=poires[x],pommes[ ]
+OK [supprimer] items=pommes[ ] 
+OK [accepte] status=accepted:Ada Lovelace,36,4267605246
+OK [rejete] age=200 status=rejected:âge : entier décimal entre 0 et 150
+OK [volumes] tab=big
+OK [select ligne 3] sel=2 digest=-
+OK [fin de liste] sel=99999
+OK [hachage 1 Mo par F*] digest=1,832080,1791175457
+RSS : 174 Mo avant l'onglet Volumes, 174 Mo juste après ; 198 Mo en fin de test
+rendus journalisés : 72
+SMOKE OK
+######## durée 18 s
+
+######## rechargement à chaud
+OK [état] « Valeur : 3 »
+[A] mode=full verif_ms=3185 extraction_ms=785 build_ms=4540 total_ms=8511 | sauvegarde->rendu_ms=8821 | reloaded model-kept ms=28
+OK [A] « Valeur HOT : 3 »
+[B] mode=full verif_ms=3684 extraction_ms=829 build_ms=4503 total_ms=9017 | sauvegarde->rendu_ms=9358 | reloaded model-kept ms=13
+OK [B] « Valeur HOT : 10 »
+[C] mode=full verif_ms=3438 extraction_ms=716 build_ms=4498 total_ms=8653 | sauvegarde->rendu_ms=8852 | reloaded model-RESET (champs changés: app_model) ms=11
+OK [C] « Valeur HOT : 0 »
+OK [C] modèle réinitialisé : model-RESET (champs changés: app_model)
+[D] mode=lax verif_ms=1572 extraction_ms=801 build_ms=4551 total_ms=6924 | sauvegarde->rendu_ms=7253 | reloaded model-kept ms=9
+OK [D] « Valeur LAX : 1 »
+OK [E sélection] « BigList 0/100000 sel=2 »
+OK [E condensé] « Texte 1 : 832080 »
+OK [E après rechargement : sélection conservée] « BigList 0/100000 sel=2 »
+OK [E après rechargement : condensé conservé] « Texte 1 : 832080 »
+après D, sans interaction : alc-alive 0/5 vivants=
+déchargement ALC : alc-alive 0/5 vivants= (vivants/remplacés après GC)
+RSS HostDev : 190092 Ko
+OK déchargement : 0 ancien contexte vivant (alc-alive 0/5 vivants=)
+HOTRELOAD OK
+######## durée 69 s
+
+######## mutations
+== M1 constante FNV (prime)
+F* (preuves complètes) : ACCEPTÉE
+FAIL: fnv 'a'
+FAIL: fnv 'foobar'
+FAIL: fnv '\0'
+=> détectée par les tests
+== M2 constante FNV (offset)
+F* (preuves complètes) : ACCEPTÉE
+FAIL: fnv ''
+FAIL: fnv 'a'
+FAIL: fnv 'foobar'
+=> détectée par les tests
+== M3 borne d'âge 151
+F* (preuves complètes) : REJETÉE
+* Error 19 at Core.fst(119,36-119,37):
+  - Expected type n: FStar.UInt32.t{FStar.UInt32.v n <= 150}
+    got type n: FStar.UInt32.t{FStar.UInt32.v n <= 1000}
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: age '151'
+FAIL: age_ok 150/151
+FAIL: age diff
+=> détectée aussi par les tests
+== M4 règle printable (C1 -> 158)
+F* (preuves complètes) : ACCEPTÉE
+FAIL: nom C1 0x9F
+FAIL: printable
+checks=1490342 fails=2
+=> détectée par les tests
+== M5 longueur de nom 21
+F* (preuves complètes) : REJETÉE
+* Error 19 at Core.fst(139,75-139,77):
+  - Failed to prove: FStar.List.Tot.Base.length l <= 20
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: nom 21
+checks=1490342 fails=1
+=> détectée aussi par les tests
+== M6 chiffre décimal décalé (Big)
+F* (preuves complètes) : ACCEPTÉE
+FAIL: row = attendu
+FAIL: row_index réciproque
+FAIL: index_of src0
+=> détectée par les tests
+== M7 modulo des lignes de texte
+F* (preuves complètes) : ACCEPTÉE
+FAIL: line = attendu
+FAIL: texte : longueur UTF-16
+FAIL: texte : fin
+=> détectée par les tests
+== M8 row_index sans borne
+F* (preuves complètes) : REJETÉE
+* Error 19 at Big.fst(65,122-65,124):
+  - Failed to prove: Big.row_index s < Big.rows_count
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: hors plage 100000
+FAIL: hors plage 999999
+checks=1490342 fails=2
+=> détectée aussi par les tests
+== M9 Dec : borne basse -1001
+F* (preuves complètes) : REJETÉE
+* Error 19 at App.fst(125,47-125,84):
+  - Expected type m': model{inv m'}
+    got type
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: dec sature
+checks=1490342 fails=1
+=> détectée aussi par les tests
+== M10 Select : borne <= 
+F* (preuves complètes) : REJETÉE
+* Error 19 at App.fst(140,45-140,64):
+  - Expected type m': model{inv m'} got type model
+  - Failed to prove:
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: select 100000 refusé
+checks=1490342 fails=1
+=> détectée aussi par les tests
+== M11 digest : longueur + 1
+F* (preuves complètes) : REJETÉE
+* Error 19 at App.fst(264,56-264,94):
+  - Expected type
+    got type Prims.squash (FStar.String.maxlen (Big.text_of id) (Prims.pow2 30))
+=> détectée par F*
+en --lax : extraite, tests :
+FAIL: hash src 1
+FAIL: hash src 0 : texte vide
+FAIL: hash src inconnue : texte vide
+=> détectée aussi par les tests
+== M12 AddItem ne vide plus le brouillon
+F* (preuves complètes) : ACCEPTÉE
+FAIL: show_model liste
+FAIL: preload appliqué
+FAIL: add : brouillon vidé, id suivant
+=> détectée par les tests
+== M13 Reset ne remet pas à zéro
+F* (preuves complètes) : ACCEPTÉE
+FAIL: reset
+FAIL: reset : compteur à 0
+checks=1490342 fails=3712
+=> détectée par les tests
+MUTATIONS : toutes détectées
+######## durée 515 s
+
+######## matrice d'extraction F*
+Mx01_Char          OK       
+Mx02_CharU32       EXTRACT  * Error 395:   - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and     has no F# realization. 
+Mx03_CharOfInt     OK       
+Mx04_String        OK       
+Mx05_StringIndex   OK       
+Mx06_List          OK       
+Mx07_ListSort      OK       
+Mx08_Option        OK       
+Mx09_Seq           OK       
+Mx10_Set           OK       
+Mx11_Map           OK       
+Mx12_RBMap         OK       
+Mx13_OrdSet        OK       
+Mx14_UInt64        OK       
+Mx15_Int64         OK       
+Mx16_Cast          OK       
+Mx17_UInt128       OK       
+Mx18_Printf        OK       
+Mx19_PrimsInt      OK       
+Mx20_Bytes         OK       
+Mx21_Ghost         OK       
+Mx22_Poly          OK       
+Mx23_Exn           OK       
+Mx24_Float64       OK       
+Mx25_PrimsIntDivNeg RUN      FAIL 
+Mx26_UnaryMinus    EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+Mx27_PrimsAbs      EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+Mx28_Int32DivNeg   OK       
+Mx29_ListRefb      BUILD    Mx29_ListRefb.fsproj]
+Mx30_ListSplitAt   RUN      Unhandled exception. System.InvalidOperationException: The input sequence has an insufficient number of elements. The list was 17 elements shorter than the index 
+Mx31_BoolOfCompare RUN      FAIL 
+Mx32_CompareOfBool RUN      FAIL 
+Mx33_StringSupplementary RUN      FAIL 
+Mx34_PrintHexPad   RUN      sortie différente de docs/matrix/Mx34_PrintHexPad.expected : 1,6c1,6 < 0x00 < 0x0f 
+Mx36_StringCase    RUN      FAIL 
+Mx37_StringSplitEmpty RUN      FAIL 
+Mx38_StringCompareValue RUN      FAIL 
+Mx39_Either        EXTRACT  * Error 395:   - Custard: the type FStar.Pervasives.either is realized by hand-written OCaml     and has no F# realization. 
+Mx40_PrintableList RUN      TIMEOUT 30 s (boucle infinie ?) ; sortie partielle :  
+Mx41_UIntSubMod    RUN      FAIL 
+Mx42_RBMapForAny   RUN      FAIL 
+Mx43_FloatBitEq    EXTRACT  * Error 395:   - Custard: FStar.Float64.bit_eq has no F* definition and no F# realization.   - It is declared by FStar.Float64, which F* realizes with hand-written OCaml 
+Mx44_FloatToString EXTRACT  * Error 395:   - Custard: FStar.Float64.to_string has no F* definition and no F# realization.   - It is declared by FStar.Float64, which F* realizes with hand-written OCaml 
+Mx45_Printf        OK       
+Mx46_PrintfMachineInt RUN      Unhandled exception. System.Exception: Prims.admit    at Mx46_PrintfMachineInt.mx46_PrintfMachineInt_main(Unit tmp) in /home/user/ff/logs/matrix/Mx46_PrintfMachineInt/o/Mx46_PrintfMachineInt/Mx46_Prin
+
+résumé :       1 BUILD       6 EXTRACT      25 OK      13 RUN 
+conforme à docs/matrix/EXPECTED.tsv
+######## durée 97 s
+
+######## tests amont de F* (backend F#)
+custard.AnyCond                    OK       
+custard.AnyException               OK       
+custard.BytesFS                    OK       
+custard.EmptyMatch                 OK       
+custard.Exceptions                 OK       
+custard.FloatSpecial               OK       
+custard.Floats                     OK       
+custard.FsPointFree                OK       
+custard.FsRecMatch                 OK       
+custard.FsSizet32                  OK       
+custard.Hello                      OK       
+custard.KrmlBasic                  OK       
+custard.LitBase                    OK       
+custard.LitStr                     OK       
+custard.Literals                   OK       
+custard.MachineInts                OK       
+custard.Mymon                      OK       
+custard.OcamlEscape                OK       
+custard.Recursion                  OK       
+custard.Refs                       OK       
+custard.Rotate                     OK       
+custard.ShortCircuit               OK       
+custard.Typeclass                  OK       
+custard.TyvarQuote                 OK       
+custard.Union                      OK       
+custard.UnitPtr                    OK       
+custard.Unroll                     OK       
+custard.Wide128                    OK       
+machine_integers.Test01            OK       
+machine_integers.Test02            OK       
+machine_integers.Test03            OK       
+machine_integers.TestCasts         OK       
+machine_integers.TestChar          EXTRACT  * Error 395:   - Custard: the type FStar.Char.char_code is realized by hand-written OCaml and     has no F# realization. 
+machine_integers.TestPrint         EXTRACT  * Error 395:   - Custard: FStar.UInt8.to_string_hex has no F* definition and no F#     realization. 
+machine_integers.TestRotate        OK       
+machine_integers.TestShift         EXTRACT  * Error 395:   - Custard: Prims.op_Tilde_Minus has no F* definition and no F# realization.   - It is declared by Prims, which F* realizes with hand-written OCaml in 
+
+résumé :       3 EXTRACT      33 OK 
+conforme à docs/upstream/EXPECTED.tsv
+######## durée 58 s
+
+######## balayage d'ulib + couverture
+modules : 221
+     84 EXTRACT
+     69 VIDE
+     61 OK
+      7 BUILD
+Parmi les modules OK, définitions exécutables atteintes par la suite : **264 sur 537** (49 %). « Atteinte » = présente dans le F# généré du programme de test (voir l'en-tête de `scripts/coverage_ulib.py`).
+######## durée 127 s
+
+######## plateformes (bureau ×8, NativeAOT, navigateur, Android, iOS)
+win-x64            JIT       BUILT    207M ; 9 bibliothèques natives (Skia/HarfBuzz…)
+win-arm64          JIT       BUILT    216M ; 9 bibliothèques natives (Skia/HarfBuzz…)
+osx-x64            JIT       BUILT    107M ; 7 bibliothèques natives (Skia/HarfBuzz…)
+osx-arm64          JIT       BUILT    114M ; 7 bibliothèques natives (Skia/HarfBuzz…)
+linux-x64          JIT       BUILT    104M ; 6 bibliothèques natives (Skia/HarfBuzz…)
+linux-arm64        JIT       BUILT    110M ; 6 bibliothèques natives (Skia/HarfBuzz…)
+linux-musl-x64     JIT       BUILT    112M ; 6 bibliothèques natives (Skia/HarfBuzz…)
+linux-musl-arm64   JIT       BUILT    118M ; 6 bibliothèques natives (Skia/HarfBuzz…)

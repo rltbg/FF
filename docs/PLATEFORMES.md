@@ -1,5 +1,7 @@
 # Compiler vers toutes les plateformes
 
+> **NativeAOT partout ?** Voir [`NATIVEAOT.md`](NATIVEAOT.md) : la documentation exclut la compilation NativeAOT **entre OS** (Windows et macOS/iOS exigent leur propre machine), classe Android « expérimental » (APK NativeAOT construit ici, jamais lancé) et ne prévoit pas le navigateur.
+
 **Objectif de cette étape :** que le même cœur F* et la même interface se **construisent** pour toutes les plateformes qu'Avalonia 12.1.4 prend en
 charge, sans rien mesurer ni valider fonctionnellement hors Linux. Résultat de la dernière passe : [`PLATEFORMES-RESULTAT.md`](PLATEFORMES-RESULTAT.md)
 (généré par `scripts/platforms.sh`). Aucune des mesures de `REPORT.md` (démarrage, mémoire, rendu) ne vaut pour une autre plateforme.

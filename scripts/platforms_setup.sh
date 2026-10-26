@@ -16,4 +16,8 @@ if [ ! -d "$ROOT/.tools/android-sdk/platforms" ]; then
     echo "SDK Android absent : relancer avec ACCEPT_ANDROID_LICENSES=1 pour accepter ses licences et l'installer (JDK 17+ requis)."; exit 3
   fi
 fi
+# NDK r27+ : nécessaire au NativeAOT Android (l'éditeur de liens final est celui du NDK) ; même licence que le SDK
+if [ ! -d "$ROOT/.tools/android-sdk/ndk/27.2.12479018" ] && [ "${ACCEPT_ANDROID_LICENSES:-0}" = 1 ]; then
+  "$ROOT/.tools/android-sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ROOT/.tools/android-sdk" "ndk;27.2.12479018" > /dev/null
+fi
 echo "plateformes prêtes : $(dotnet workload list | awk '/^(wasm-tools|android) /{printf "%s ", $1}') ; SDK Android : $([ -d "$ROOT/.tools/android-sdk/platforms" ] && echo présent || echo absent)"

@@ -23,6 +23,7 @@ Versions : F* 2026.10.25 · .NET SDK 10.0.403 · Avalonia 12.1.4 · FSharp.Core 
 | `ftests/` | **Tous les tests, en F\*** (aucun test en F#) : 1 490 342 vérifications en JIT et en AOT ; générateurs `scripts/gen_tmachine.py`, `gen_tulib.py` |
 | `tools/dumpscan/` | Analyseur ClrMD de dumps : qui retient un `AssemblyLoadContext` collectible (a servi à trouver la fuite du premier contexte, voir REPORT §5) |
 | `docs/ULIB-COUVERTURE.md` + `COUVERTURE-*.md` | Test de « toutes les fonctions F* » : méthode, couverture mesurée (171/187 réalisations, 49 % des définitions exécutables d'ulib atteintes), écarts trouvés |
+| `docs/NATIVEAOT.md` | **NativeAOT sur toutes les plateformes** : ce que dit la documentation (pas de cross-OS ; Android expérimental ; pas de navigateur), ce qui a été essayé, ce qui reste |
 | `docs/PLATEFORMES.md` | **Compiler vers toutes les plateformes** : architecture des têtes, ce qui se construit ici (bureau ×8 RID, NativeAOT, navigateur, Android), ce qui ne se construit pas (iOS), ce qui n'est pas vérifié |
 | `docs/GUIDE.md` | **Tout** : architecture, règles pour écrire du F* qui s'extrait, hôte, boucle de dev, gros volumes, AOT, extension |
 | `docs/STATUT.md` | Ce qui est fait / limité / pas fait / impossible ici |

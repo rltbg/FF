@@ -12,6 +12,13 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
   </PropertyGroup>
+  <!-- NativeAOT sur Android (expérimental, voir docs/NATIVEAOT.md) : activé par -p:AndroidNativeAot=true avec un RID android-arm64 ou android-x64,
+       le NDK r27+ (AndroidNdkDirectory) et EnablePreviewFeatures (avertissement XA1040). Par défaut : Mono AOT (APK multi-ABI). -->
+  <PropertyGroup Condition="'$(AndroidNativeAot)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Android.fs" />
   </ItemGroup>

@@ -1,3 +1,2 @@
-win-x64	JIT	BUILT	207M ; 9 bibliothèques natives (Skia/HarfBuzz…)
-osx-arm64	JIT	BUILT	114M ; 7 bibliothèques natives (Skia/HarfBuzz…)
-linux-arm64	JIT	BUILT	110M ; 6 bibliothèques natives (Skia/HarfBuzz…)
+android-arm64	NativeAOT	BUILT	19M ; 1 lib native managée ; expérimental, jamais lancé
+android-x64	NativeAOT	BUILT	20M ; 1 lib native managée ; expérimental, jamais lancé
