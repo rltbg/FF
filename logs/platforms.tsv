@@ -1,2 +1,1 @@
-android-arm64	NativeAOT	BUILT	19M ; 1 lib native managée ; expérimental, jamais lancé
-android-x64	NativeAOT	BUILT	20M ; 1 lib native managée ; expérimental, jamais lancé
+browser-wasm	WASM	BUILT	24M ; wwwroot/ à servir en HTTP

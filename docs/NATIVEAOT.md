@@ -41,6 +41,17 @@ Pris en charge depuis .NET 9. Pour un projet à TFM propre à l'OS (`net10.0-ios
 
 NativeAOT n'est **pas** une cible officielle pour `browser-wasm` (absent de la table §1). La voie officielle pour le navigateur est l'**AOT Mono pour WebAssembly** (workload `wasm-tools`, `RunAOTCompilation`), ce qui n'est pas NativeAOT. NativeAOT-LLVM existe dans dotnet/runtimelab (expérimental, hors produit). Avalonia indique que WebAssembly est une cible, sans mention de NativeAOT.
 
+**Mesuré ici (Mono AOT, `RunAOTCompilation=true`, même code, Chromium headless sous Linux, rendu logiciel, serveur local) :**
+
+| | interprète Mono (défaut) | Mono AOT |
+|---|---|---|
+| Publication | ≈ 1 min | ≈ 6 min |
+| `_framework` (disque / transfert brotli) | 23 Mo / 4,2 Mo | 52 Mo / 7,5 Mo |
+| Canvas créé après chargement | 1,25–1,7 s | 1,4–1,5 s (pas d'avantage visible) |
+| Clic « Hacher le texte (F*) » → résultat affiché (texte de 1 Mo généré et haché par F*) | 330–410 ms | 140–175 ms |
+
+Le gain de l'AOT Mono se voit sur le **calcul** (≈ ×2,3 ici), pas sur le chargement ; il coûte presque le double en téléchargement. À titre de repère, le même hachage dure 3 ms en NativeAOT sur le bureau (REPORT §7) : WebAssembly reste ≈ 40 à 100 fois plus lent que le natif, AOT compris. Mesures de ce conteneur uniquement, sur trois essais ; la mesure inclut le délai des captures d'écran.
+
 ## 7. Bilan par plateforme
 
 | Plateforme | NativeAOT possible ? | Où le construire | État dans ce dépôt |

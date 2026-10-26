@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-  await p.goto('http://localhost:29859/index.html');
+  await p.goto('http://localhost:20743/index.html');
   await p.waitForSelector('canvas', { timeout: 60000 });
   await p.waitForTimeout(8000);
   const a = await p.screenshot({ path: '/home/user/ff/shots/browser/0_init.png' });

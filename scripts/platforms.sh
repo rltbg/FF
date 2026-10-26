@@ -37,10 +37,14 @@ for t in "${targets[@]}"; do
       d="$OUT/aot-$HOSTRID"; rm -rf "$d"
       if dotnet publish "$ROOT/app/HostStatic" -c Release -r "$HOSTRID" --nologo -o "$d" > "$OUT/aot.log" 2>&1 && [ -x "$d/HostStatic" -o -f "$d/HostStatic.exe" ]; then rec "$HOSTRID" NativeAOT BUILT "$(size "$d") (RID de cette machine seulement)"
       else rec "$HOSTRID" NativeAOT ÉCHEC "$(grep -m1 -E 'error' "$OUT/aot.log" | cut -c1-160)"; fi ;;
-    browser)
-      d="$OUT/browser"; rm -rf "$d"
-      if dotnet publish "$ROOT/app/HostBrowser" -c Release --nologo -o "$d" > "$OUT/browser.log" 2>&1 && [ -f "$d/wwwroot/index.html" ] && ls "$d"/wwwroot/_framework/dotnet*.js >/dev/null 2>&1; then rec browser-wasm WASM BUILT "$(size "$d") ; wwwroot/ à servir en HTTP"
-      else rec browser-wasm WASM ÉCHEC "$(grep -m1 -E 'error' "$OUT/browser.log" | cut -c1-160) (workload wasm-tools : scripts/platforms_setup.sh)"; fi ;;
+    browser|browser-aot)
+      # bin/ et obj/ sont vidés : réutiliser les objets d'un build AOT pour un build sans AOT (ou l'inverse) donne un runtime qui échoue
+      # au chargement (« MONO interpreter: NIY … OutOfMemoryException:.ctor », observé)
+      rm -rf "$ROOT/app/HostBrowser/bin" "$ROOT/app/HostBrowser/obj"
+      aotflag=""; [ "$t" = browser-aot ] && aotflag="-p:RunAOTCompilation=true"
+      d="$OUT/$t"; rm -rf "$d"
+      if dotnet publish "$ROOT/app/HostBrowser" -c Release $aotflag --nologo -o "$d" > "$OUT/$t.log" 2>&1 && [ -f "$d/wwwroot/index.html" ] && ls "$d"/wwwroot/_framework/dotnet*.js >/dev/null 2>&1; then rec browser-wasm "$([ "$t" = browser-aot ] && echo "Mono AOT" || echo interprète)" BUILT "$(size "$d") ; wwwroot/ à servir en HTTP"
+      else rec browser-wasm WASM ÉCHEC "$(grep -m1 -E 'error' "$OUT/$t.log" | cut -c1-160) (workload wasm-tools : scripts/platforms_setup.sh)"; fi ;;
     android)
       d="$OUT/android"; rm -rf "$d"
       if [ ! -d "$ASDK/platforms" ]; then rec android APK SAUTÉ "SDK Android absent : ACCEPT_ANDROID_LICENSES=1 scripts/platforms_setup.sh"
