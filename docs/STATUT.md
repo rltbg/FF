@@ -9,7 +9,7 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 |---|---|---|
 | Preuves F* | invariant de `update` (compteur, ids, sélection < 100 000, pas de débordement u32), correction fonctionnelle de `parse_nat`, équivalence `fnv_bytes` = spécification, condensé exact du texte haché, 21 lemmes | `fst/` |
 | Extraction | `Core.fst` et `App.fst` extraits tels quels, 0 warning ; 1 seul contournement F* (`u32_of_char`) | `scripts/extract.sh` |
-| Tests exécutables | 950 833 vérifications, 0 échec, en JIT et en NativeAOT | `scripts/test.sh` |
+| Tests exécutables | 950 851 vérifications, 0 échec, en JIT et en NativeAOT | `scripts/test.sh` |
 | Mutations | 3 mutations toutes détectées (une par F*, deux par les tests) | `scripts/mutate.sh` |
 | Interface | 3 onglets + Volumes, pilotés par xdotool, **état du modèle vérifié à chaque étape**, AOT et JIT | `scripts/ui_smoke.sh` |
 | Rechargement à chaud | 5 scénarios (vue, logique, type du modèle, mode sans preuves, onglet Volumes) ; déchargement de **tous** les contextes | `scripts/hotreload.sh` |

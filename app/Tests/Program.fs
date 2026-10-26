@@ -215,8 +215,42 @@ let testBig () =
   let h = app_update app_init (App_HashText (1u, big))
   check "texte 1 Mo : condensé" (h.digest = Some { text_id = 1u; len = uint32 big.Length; fnv = refFnvUtf8 big })
 
+let testLazyRows () =
+  // BigData / LazyRows (source Avalonia 12.1.4 : IndexOf sert à la sélection par objet)
+  let rows = Ui.LazyRows(100000, Ui.BigData.row, Ui.BigData.rowIndex) :> Collections.IList
+  check "rows : Count" ((rows :> Collections.ICollection).Count = 100000)
+  check "rows : Item 0" ((rows.[0] :?> string) = "Ligne 000000 — donnée côté hôte")
+  check "rows : Item 99999" ((rows.[99999] :?> string) = "Ligne 099999 — donnée côté hôte")
+  let mutable bad = 0
+  for i in 0 .. 99999 do
+    let s = rows.[i]
+    if rows.IndexOf s <> i || not (rows.Contains s) then bad <- bad + 1
+  check "rows : IndexOf et Contains réciproques sur 100 000 lignes" (bad = 0)
+  check "rows : hors plage (100000)" (rows.IndexOf (box (Ui.BigData.row 100000)) = -1 && not (rows.Contains (box (Ui.BigData.row 100000))))
+  check "rows : texte étranger" (rows.IndexOf (box "Ligne 000001 — autre") = -1)
+  check "rows : non-string" (rows.IndexOf (box 3) = -1 && rows.IndexOf null = -1)
+  check "rows : trop court" (rows.IndexOf (box "Ligne ") = -1 && rows.IndexOf (box "") = -1)
+  check "rows : Item négatif lève" (try rows.[-1] |> ignore; false with :? ArgumentOutOfRangeException -> true)
+  check "rows : Item = Count lève" (try rows.[100000] |> ignore; false with :? ArgumentOutOfRangeException -> true)
+  check "rows : lecture seule" (rows.IsReadOnly && rows.IsFixedSize && (try rows.Add (box "x") |> ignore; false with :? NotSupportedException -> true))
+  let small = Ui.LazyRows(5, Ui.BigData.row, Ui.BigData.rowIndex) :> Collections.IList
+  let arr = Array.zeroCreate<obj> 7
+  (small :> Collections.ICollection).CopyTo(arr, 1)
+  check "rows : CopyTo" (isNull arr.[0] && (arr.[1] :?> string) = Ui.BigData.row 0 && (arr.[5] :?> string) = Ui.BigData.row 4 && isNull arr.[6])
+  check "rows : énumération" ([ for o in small -> o :?> string ] = [ for i in 0 .. 4 -> Ui.BigData.row i ])
+  check "rows : IndexOf borné par Count" (small.IndexOf (box (Ui.BigData.row 5)) = -1 && small.IndexOf (box (Ui.BigData.row 4)) = 4)
+  // lignes du texte : réciproque et reconstitution du texte complet
+  let mutable badL = 0
+  for i in 0 .. Ui.BigData.textLines - 1 do
+    if Ui.BigData.lineIndex (Ui.BigData.line i) <> i then badL <- badL + 1
+  check "lignes : lineIndex réciproque sur 38 000 lignes" (badL = 0)
+  check "lignes : lineIndex hors plage" (Ui.BigData.lineIndex (Ui.BigData.line 0 |> fun s -> s.Replace("000000", "038000")) = -1)
+  let text = Ui.BigData.text.Value
+  check "texte : 38 000 lignes de '\n'" (text.Split('\n').Length = 38001 && text.EndsWith "\n")
+  check "texte : 1 022 080 octets UTF-8" (Text.Encoding.UTF8.GetByteCount text = 1022080)
+
 let run () =
-  testFnv (); testParse (); testName (); testUpdate (); testBig ()
+  testFnv (); testParse (); testName (); testUpdate (); testBig (); testLazyRows ()
   Console.WriteLine("checks=" + string checks + " fails=" + string fails)
   if fails = 0 then 0 else 1
 

@@ -31,6 +31,7 @@ Architecture MVU (Elm) : **tout le code applicatif est en F\***, prouvé, puis e
 
 ```
 scripts/setup.sh     # installe F* et le SDK .NET dans .tools/ (versions épinglées, idempotent)
+scripts/sources.sh   # code source de F* et d'Avalonia (mêmes versions) dans .tools/src/ : À LIRE avant d'écrire du code (voir CLAUDE.md)
 scripts/all.sh       # passe complète depuis zéro, ≈ 7 min : doit finir par « TOUT OK »
 ```
 Pré-requis système pour l'interface : Xvfb, `xdotool`, `x11-utils` (xwininfo, xprop), ImageMagick, `libfontconfig`.

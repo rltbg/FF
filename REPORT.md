@@ -57,7 +57,7 @@ Puis extension de la passe (étapes laissées « non testées » dans la version
 
 ## 3. Tests (`logs/all.log`, `logs/mutations.log`)
 
-- **Suite :** 950 833 vérifications, **0 échec en JIT et en AOT**. Elle couvre : vecteurs FNV du draft ; équivalence entre implémentation tableau et spec liste ; `fnv_append` ; `fnv_utf8` contre `Encoding.UTF8` ; analyse décimale (cas limites et différentiel) ; `printable` exhaustif ; invariant de `update` recalculé indépendamment ; tous les lemmes d'application ; garde de débordement des identifiants (`next_id` = 0xFFFFFFFD accepté, 0xFFFFFFFE refusé) ; totalité de `view` ; sélection `Select` (0, 99 999 acceptés ; 100 000 et 4 294 967 295 refusés) ; `HashText` (4 000 000 unités acceptées, 4 000 001 refusées, texte de 1 Mo comparé à une référence indépendante).
+- **Suite :** 950 851 vérifications, **0 échec en JIT et en AOT**. Elle couvre : vecteurs FNV du draft ; équivalence entre implémentation tableau et spec liste ; `fnv_append` ; `fnv_utf8` contre `Encoding.UTF8` ; analyse décimale (cas limites et différentiel) ; `printable` exhaustif ; invariant de `update` recalculé indépendamment ; tous les lemmes d'application ; garde de débordement des identifiants (`next_id` = 0xFFFFFFFD accepté, 0xFFFFFFFE refusé) ; totalité de `view` ; sélection `Select` (0, 99 999 acceptés ; 100 000 et 4 294 967 295 refusés) ; `HashText` (4 000 000 unités acceptées, 4 000 001 refusées, texte de 1 Mo comparé à une référence indépendante).
 - **Mutations** (`scripts/mutate.sh`, toutes détectées) :
 
 | Mutation | Preuves F* | Tests |

@@ -7,31 +7,6 @@ open Avalonia.Controls
 open Avalonia.Layout
 open Avalonia.Media
 
-/// Lignes de la grande liste, générées à la demande : IList non générique en lecture seule, que
-/// l'ItemsControl d'Avalonia virtualise (aucune des 100 000 chaînes n'existe tant qu'elle n'est pas affichée).
-type LazyRows(count: int, get: int -> string) =
-  interface IList with
-    member _.Item
-      with get (i: int) : obj = box (get i)
-      and set (_: int) (_: obj) = raise (NotSupportedException())
-    member _.Add(_: obj) : int = raise (NotSupportedException())
-    member _.Clear() = raise (NotSupportedException())
-    member _.Contains(_: obj) = false
-    member _.IndexOf(_: obj) = -1
-    member _.Insert(_: int, _: obj) = raise (NotSupportedException())
-    member _.Remove(_: obj) = raise (NotSupportedException())
-    member _.RemoveAt(_: int) = raise (NotSupportedException())
-    member _.IsFixedSize = true
-    member _.IsReadOnly = true
-  interface ICollection with
-    member _.Count = count
-    member _.IsSynchronized = false
-    member _.SyncRoot = box count
-    member _.CopyTo(_: Array, _: int) = raise (NotSupportedException())
-  interface IEnumerable with
-    member _.GetEnumerator() : IEnumerator = (Seq.init count get :> IEnumerable).GetEnumerator()
-  member _.Count = count
-
 /// État porté par un TextBox (dans Control.Tag) : le tag F* courant et le dernier texte connu.
 type internal InputState = { mutable InputTag: obj; mutable Last: string }
 
@@ -85,7 +60,7 @@ type Interp(dispatch: obj -> unit,
             onInput st.InputTag t)
       tb :> Control
     | BigList (rows, selected) ->
-      let lb = ListBox(Height = 220.0, Width = 360.0, ItemsSource = LazyRows(int rows, BigData.row), Tag = box rows)
+      let lb = ListBox(Height = 220.0, Width = 360.0, ItemsSource = LazyRows(int rows, BigData.row, BigData.rowIndex), Tag = box rows)
       if selected >= 0L then lb.SelectedIndex <- int selected
       lb.SelectionChanged.Add(fun _ ->
         if not patching && lb.SelectedIndex >= 0 then onSelect (uint32 lb.SelectedIndex))
@@ -93,7 +68,7 @@ type Interp(dispatch: obj -> unit,
     | BigText id ->
       // visualiseur de lignes virtualisé (lecture seule) : un TextBox de 1 Mo coûte ~170 Mo de RSS (mesuré).
       // Le texte complet n'est jamais copié dans le modèle F* : il est construit et fourni à F* par le bouton.
-      let lines = ListBox(Height = 110.0, Width = 360.0, ItemsSource = LazyRows(BigData.textLines, BigData.line))
+      let lines = ListBox(Height = 110.0, Width = 360.0, ItemsSource = LazyRows(BigData.textLines, BigData.line, BigData.lineIndex))
       let b = Button(Content = "Hacher le texte (F*)", Tag = box id)
       b.Click.Add(fun _ -> onText (unbox<uint32> b.Tag) BigData.text.Value)
       let p = StackPanel(Spacing = 8.0)
@@ -138,7 +113,7 @@ type Interp(dispatch: obj -> unit,
         tb :> Control
       | _, BigList (rows, selected), (:? ListBox as lb) ->
         if unbox<uint32> lb.Tag <> rows then
-          lb.ItemsSource <- LazyRows(int rows, BigData.row)
+          lb.ItemsSource <- LazyRows(int rows, BigData.row, BigData.rowIndex)
           lb.Tag <- box rows
         let want = if selected >= 0L then int selected else -1
         if lb.SelectedIndex <> want then lb.SelectedIndex <- want

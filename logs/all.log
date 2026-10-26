@@ -2,7 +2,7 @@
 ######## setup
 F* 2026.10.25
 10.0.403
-######## durée 0 s
+######## durée 1 s
 
 ######## vérification + extraction
 Verified module: Core
@@ -11,7 +11,7 @@ Verified module: App
 All verification conditions discharged successfully
 Verified module: App
 All verification conditions discharged successfully
-######## durée 6 s
+######## durée 5 s
 
 ######## compilation + NativeAOT
 
@@ -19,19 +19,19 @@ Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:09.93
+Time Elapsed 00:00:09.49
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:05.75
+Time Elapsed 00:00:05.41
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:04.81
+Time Elapsed 00:00:05.43
   Ui -> /home/user/ff/app/Ui/bin/Release/net10.0/Ui.dll
   Extracted -> /home/user/ff/app/Extracted/bin/Release/net10.0/Extracted.dll
   HostStatic -> /home/user/ff/app/HostStatic/bin/Release/net10.0/linux-x64/HostStatic.dll
@@ -43,15 +43,15 @@ Time Elapsed 00:00:04.81
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL3053: Assembly 'FSharp.Core' produced AOT analysis warnings. [/home/user/ff/app/Tests/Tests.fsproj]
 /root/.nuget/packages/fsharp.core/10.1.403/lib/netstandard2.1/FSharp.Core.dll : warning IL2104: Assembly 'FSharp.Core' produced trim warnings. For more information see https://aka.ms/il2104 [/home/user/ff/app/Tests/Tests.fsproj]
   Tests -> /home/user/ff/out/Tests/
-######## durée 102 s
+######## durée 99 s
 
 ######## tests JIT + AOT
-JIT: checks=950833 fails=0
-AOT: checks=950833 fails=0
+JIT: checks=950851 fails=0
+AOT: checks=950851 fails=0
 ######## durée 1 s
 
 ######## GUI AOT
-OK fenêtre _NET_WM_PID=20826 = PID 20826
+OK fenêtre _NET_WM_PID=26673 = PID 26673
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
@@ -63,13 +63,13 @@ OK [volumes] tab=big
 OK [select ligne 3] sel=2 digest=-
 OK [fin de liste] sel=99999
 OK [hachage 1 Mo par F*] digest=1,832080,1791175457
-RSS : 113 Mo avant l'onglet Volumes, 114 Mo juste après ; 118 Mo en fin de test
+RSS : 113 Mo avant l'onglet Volumes, 113 Mo juste après ; 118 Mo en fin de test
 rendus journalisés : 72
 SMOKE OK
 ######## durée 18 s
 
 ######## GUI JIT
-OK fenêtre _NET_WM_PID=21031 = PID 21031
+OK fenêtre _NET_WM_PID=26878 = PID 26878
 OK [compteur] counter=2
 OK [onglet] tab=items
 OK [liste] items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=
@@ -81,21 +81,21 @@ OK [volumes] tab=big
 OK [select ligne 3] sel=2 digest=-
 OK [fin de liste] sel=99999
 OK [hachage 1 Mo par F*] digest=1,832080,1791175457
-RSS : 172 Mo avant l'onglet Volumes, 173 Mo juste après ; 179 Mo en fin de test
+RSS : 172 Mo avant l'onglet Volumes, 173 Mo juste après ; 178 Mo en fin de test
 rendus journalisés : 72
 SMOKE OK
 ######## durée 19 s
 
 ######## rechargement à chaud
 OK [état] « Valeur : 3 »
-[A] mode=full verif_ms=3759 extraction_ms=732 build_ms=6008 total_ms=10500 | sauvegarde->rendu_ms=10843 | reloaded model-kept ms=45
+[A] mode=full verif_ms=3359 extraction_ms=847 build_ms=5000 total_ms=9207 | sauvegarde->rendu_ms=9458 | reloaded model-kept ms=35
 OK [A] « Valeur HOT : 3 »
-[B] mode=full verif_ms=3614 extraction_ms=857 build_ms=5850 total_ms=10321 | sauvegarde->rendu_ms=10499 | reloaded model-kept ms=13
+[B] mode=full verif_ms=3221 extraction_ms=824 build_ms=4973 total_ms=9020 | sauvegarde->rendu_ms=9330 | reloaded model-kept ms=13
 OK [B] « Valeur HOT : 10 »
-[C] mode=full verif_ms=3914 extraction_ms=1014 build_ms=5716 total_ms=10644 | sauvegarde->rendu_ms=10844 | reloaded model-RESET (champs changés: app_model) ms=15
+[C] mode=full verif_ms=3618 extraction_ms=895 build_ms=4997 total_ms=9512 | sauvegarde->rendu_ms=9814 | reloaded model-RESET (champs changés: app_model) ms=14
 OK [C] « Valeur HOT : 0 »
 OK [C] modèle réinitialisé : model-RESET (champs changés: app_model)
-[D] mode=lax verif_ms=1362 extraction_ms=752 build_ms=5819 total_ms=7934 | sauvegarde->rendu_ms=8215 | reloaded model-kept ms=16
+[D] mode=lax verif_ms=1432 extraction_ms=817 build_ms=5494 total_ms=7744 | sauvegarde->rendu_ms=7997 | reloaded model-kept ms=12
 OK [D] « Valeur LAX : 1 »
 OK [E sélection] « BigList 100000 sel=2 »
 OK [E condensé] « Texte 1 : 832080 »
@@ -103,17 +103,17 @@ OK [E après rechargement : sélection conservée] « BigList 100000 sel=2 »
 OK [E après rechargement : condensé conservé] « Texte 1 : 832080 »
 après D, sans interaction : alc-alive 0/5 vivants=
 déchargement ALC : alc-alive 0/5 vivants= (vivants/remplacés après GC)
-RSS HostDev : 184948 Ko
+RSS HostDev : 184772 Ko
 OK déchargement : 0 ancien contexte vivant (alc-alive 0/5 vivants=)
 HOTRELOAD OK
-######## durée 77 s
+######## durée 72 s
 
 ######## mutations
 == M1 constante FNV
 F* (preuves complètes) : ACCEPTÉE
 FAIL: fnv = ref
 FAIL: fnv_utf8 = ref
-checks=950833 fails=39534
+checks=950851 fails=39534
 => détectée par les tests
 == M2 borne d'âge 151
 F* (preuves complètes) : REJETÉE
@@ -125,16 +125,16 @@ F* (preuves complètes) : REJETÉE
 en --lax : extraite, tests :
 FAIL: age diff 151
 FAIL: age diff 151
-checks=950833 fails=10
+checks=950851 fails=10
 => détectée aussi par les tests
 == M3 règle printable
 F* (preuves complètes) : ACCEPTÉE
 FAIL: nom C1 0x9F
 FAIL: printable 159
-checks=950833 fails=2
+checks=950851 fails=2
 => détectée par les tests
 MUTATIONS : toutes détectées
-######## durée 61 s
+######## durée 56 s
 
 ######## matrice d'extraction F*
 Mx01_Char          OK       
@@ -168,7 +168,7 @@ Mx28_Int32DivNeg   OK
 
 résumé :       3 EXTRACT      24 OK       1 RUN 
 conforme à docs/matrix/EXPECTED.tsv
-######## durée 55 s
+######## durée 51 s
 
 ######## reproduction char_code
 cas 1 : u32_of_char tel quel
@@ -181,6 +181,6 @@ cas 4 : contournement A (int_of_char)
   OK extrait, compile, s'exécute
 cas 5 : 0xD7FF est-il un char_code ? (spec : n < 0xd7ff)
   OK rejeté (0xD7FF exclu par la spec actuelle, probable erreur d'un cran)
-######## durée 14 s
+######## durée 13 s
 
 TOUT OK

@@ -8,6 +8,7 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Ui/Lazy.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
