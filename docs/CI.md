@@ -7,7 +7,7 @@ Workflow : `.github/workflows/build.yml`. **Il n'a jamais été exécuté** (ce 
 ## Déclenchement (pour ne gaspiller aucune minute)
 
 - **Jamais sur un simple push ni une pull request.** Seulement : lancement manuel (*Actions → build → Run workflow*, champ `targets` : `wasm`, `linux`, `windows`, `macos`, `android`, `ios`, une liste séparée par des virgules, ou `all`) et étiquette `v*` (tout).
-- Valeur par défaut du lancement manuel : `wasm` seul (le plus rapide) ; l'APK NativeAOT Android est une case à cocher (désactivée).
+- Valeur par défaut du lancement manuel : `wasm` seul (le plus rapide) ; Android : APK NativeAOT par défaut (`android_naot`), APK Mono en option (`android_mono`).
 - `concurrency` : une exécution plus récente sur la même référence annule la précédente.
 - `timeout-minutes` par job (25 à 40) : un build qui part en boucle est coupé.
 
@@ -21,7 +21,7 @@ Workflow : `.github/workflows/build.yml`. **Il n'a jamais été exécuté** (ce 
 | Windows x64 | `windows-2025` | NativeAOT (outils C++ de Visual Studio préinstallés) |
 | Windows arm64 | `windows-11-arm` | NativeAOT sur runner ARM natif ; image récente, outils C++ ARM64 non vérifiés ici |
 | macOS arm64 + x64 | `macos-15` (un seul) | NativeAOT ; le x64 est compilé en croisé **entre architectures du même OS**, permis (seul le croisé entre OS ne l'est pas) |
-| Android | `ubuntu-24.04` | APK Mono (SDK, NDK et JDK de l'image) ; NativeAOT arm64/x64 en option |
+| Android | `ubuntu-24.04` | **APK NativeAOT arm64 + x64 par défaut** (SDK, NDK et JDK de l'image) ; APK Mono en option (`android_mono`) |
 | iOS | `macos-26` | build pour simulateur (`iossimulator-arm64`) ; un `.ipa` d'appareil exige certificat et profil Apple (secrets à fournir) |
 
 ## Économies

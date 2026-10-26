@@ -10,7 +10,11 @@ on:
         description: "Cibles, séparées par des virgules : wasm, linux, windows, macos, android, ios, ou all"
         default: wasm
       android_naot:
-        description: "Android : ajouter les APK NativeAOT (expérimental, NDK r27+)"
+        description: "Android : APK NativeAOT arm64 + x64 (expérimental, NDK r27+) : défaut"
+        type: boolean
+        default: true
+      android_mono:
+        description: "Android : ajouter l'APK Mono (non NativeAOT)"
         type: boolean
         default: false
   push:
@@ -168,10 +172,11 @@ jobs:
         with: { dotnet-version: "${{ env.DOTNET_VERSION }}" }
       - run: dotnet workload install android --skip-manifest-update
       # Les licences du SDK de l'image sont déjà acceptées par GitHub ; on n'ajoute pas AcceptAndroidSDKLicenses (décision de l'utilisateur).
-      - name: "APK (Mono, signé avec la clé de débogage)"
+      - name: "APK Mono (signé avec la clé de débogage), seulement si demandé"
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.android_mono }}
         run: dotnet publish app/HostAndroid -c Release -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME_17_X64" -o out/android
-      - name: "APK NativeAOT arm64 et x64 (expérimental)"
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.android_naot }}
+      - name: "APK NativeAOT arm64 et x64 (expérimental), par défaut ; signé avec la clé de débogage"
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_naot }}
         run: |
           for abi in android-arm64 android-x64; do
             dotnet publish app/HostAndroid -c Release -r $abi -p:AndroidNativeAot=true -p:AndroidSdkDirectory="$ANDROID_HOME" \
