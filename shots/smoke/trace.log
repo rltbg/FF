@@ -47,3 +47,26 @@ tab=items counter=2 items=poires[ ],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx na
 tab=items counter=2 items=poires[x],pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name= age= status=editing sel=- digest=- ms=0.1
 tab=items counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name= age= status=editing sel=- digest=- ms=2.7
 tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name= age= status=editing sel=- digest=- ms=6.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=A age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ad age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada  age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada L age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lo age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lov age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Love age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovel age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovela age= status=editing sel=- digest=- ms=0.2
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelac age= status=editing sel=- digest=- ms=0.1
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age= status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=3 status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=36 status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=36 status=accepted:Ada Lovelace,36,4267605246 sel=- digest=- ms=0.2
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=2 status=editing sel=- digest=- ms=0.1
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=20 status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=200 status=editing sel=- digest=- ms=0.0
+tab=form counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=200 status=rejected:âge : entier décimal entre 0 et 150 sel=- digest=- ms=0.3
+tab=big counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=200 status=rejected:âge : entier décimal entre 0 et 150 sel=- digest=- ms=13.7
+tab=big counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=200 status=rejected:âge : entier décimal entre 0 et 150 sel=2 digest=- ms=0.2
+tab=big counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=200 status=rejected:âge : entier décimal entre 0 et 150 sel=99999 digest=- ms=0.0
+tab=big counter=2 items=pommes[ ] draft=xxxxxxxxxxxxxxxxxxxxxxxxx name=Ada Lovelace age=200 status=rejected:âge : entier décimal entre 0 et 150 sel=99999 digest=1,832080,1791175457 ms=0.1
