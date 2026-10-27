@@ -263,6 +263,8 @@ jobs:
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1); echo "build-tools : $BT"
           { echo '### APK'; ls -l "$APK"; "$BT/apksigner" verify --verbose --print-certs "$APK" | head -8; "$BT/aapt2" dump badging "$APK" | grep -E "^(package|sdkVersion|targetSdkVersion|native-code|launchable-activity)"; } | tee -a "$GITHUB_STEP_SUMMARY"
           unzip -l "$APK" | grep -E "lib/.*\.so" | tee -a "$GITHUB_STEP_SUMMARY"
+          # AppCompatActivity plante au setContentView sans thème AppCompat (journal d'un appareil réel) : l'activité doit déclarer android:theme
+          "$BT/aapt2" dump xmltree --file AndroidManifest.xml "$APK" | grep -q "android:theme" || { echo "aucun android:theme sur l'activité"; exit 1; }
           unzip -l "$APK" | grep -q "lib/arm64-v8a/libHostAndroid.so" || { echo "libHostAndroid.so (code géré compilé en natif) absente"; exit 1; }
           if unzip -l "$APK" | grep -qE "libmonosgen|libmonodroid|\.dll$"; then echo "Mono ou des DLL sont présents : ce n'est pas du NativeAOT"; exit 1; fi
       # informatif : alignement 16 Ko des pages (exigé par Google Play pour les apps ciblant Android 15+) ; non bloquant

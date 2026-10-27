@@ -57,7 +57,7 @@ type MvuApplication(javaReference: nativeint, transfer: JniHandleOwnership) =
     Shell.useSingleView ()
     base.CustomizeAppBuilder(builder)
 
-[<Activity(Label = "F* MVU", MainLauncher = true, Exported = true,
+[<Activity(Label = "F* MVU", Theme = "@style/MyTheme.NoActionBar", MainLauncher = true, Exported = true,
            ConfigurationChanges = (ConfigChanges.Orientation ||| ConfigChanges.ScreenSize ||| ConfigChanges.UiMode))>]
 type MainActivity() =
   inherit AvaloniaMainActivity()
