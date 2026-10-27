@@ -125,7 +125,7 @@ Les durées de bout en bout varient de 7,7 à 12,2 s selon les passes (charge de
 
 ## 6. NativeAOT (`logs/startup_bench_final.log`)
 
-- **Warnings :** `IL3053` et `IL2104` sur **FSharp.Core seulement** ; 0 sur Ui, Extracted, HostStatic et Tests, avec `IsAotCompatible`.
+- **Warnings :** 0 (bureau) depuis l'option `--reflectionfree` du compilateur F# et le remplacement de `Seq.init` ; avant : `IL3053` et `IL2104` sur FSharp.Core (voir `docs/AVERTISSEMENTS-AOT.md`). Android : restent seulement ceux du runtime .NET Android (`Mono.Android`).
 - **Taille :** binaire 20,7 Mo + libSkiaSharp 11,2 Mo + libHarfBuzzSharp 2,8 Mo = **34,7 Mo** (hors `.dbg`, 47 Mo). Tests AOT : 3,5 Mo.
 - **Démarrage et RSS** (délai jusqu'à la fenêtre X11 mappée, pas le premier rendu ; 10 runs ; p95 sur 10 = max) :
 

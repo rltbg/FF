@@ -13,7 +13,7 @@ Linux x86_64, 4 vCPU, 16 Go, sans GPU, Xvfb. **C'est un banc d'essai de la boucl
 | Mutations | 13 mutations toutes détectées (5 par F*, les autres par les tests) | `scripts/mutate.sh` |
 | Interface | 3 onglets + Volumes, pilotés par xdotool, **état du modèle vérifié à chaque étape**, AOT et JIT | `scripts/ui_smoke.sh` |
 | Rechargement à chaud | 5 scénarios (vue, logique, type du modèle, mode sans preuves, onglet Volumes) ; déchargement de **tous** les contextes | `scripts/hotreload.sh` |
-| NativeAOT | publication, 0 warning sauf `IL3053`/`IL2104` de FSharp.Core, démarrage, RSS, taille | `scripts/build.sh`, `scripts/startup.sh` |
+| NativeAOT | publication, **0 warning** (bureau ; option `--reflectionfree`, `docs/AVERTISSEMENTS-AOT.md`), démarrage, RSS, taille | `scripts/build.sh`, `scripts/startup.sh` |
 | Modes sans preuves | `--lax` et `--admit_smt_queries true` testés (`logs/loop_bench.log`) : vérification de 1,0 à 1,8 s au lieu de 2,7 à 4,9 s ; la compilation F# (≈ 5 s) domine la boucle dans les trois modes | `scripts/loop.sh`, `scripts/loop_bench.sh` |
 | Gros volumes | liste de 100 000 lignes virtualisée (côté hôte), texte de 1 022 080 octets haché par la fonction F* prouvée, coût mesuré du modèle F* à 100 000 éléments | `docs/GUIDE.md` §7 |
 | Sous-ensemble F* extractible | 46 cas (matrice : 25 OK, 6 EXTRACT, 1 BUILD, 13 RUN attendus) ; tests amont : 33 OK, 3 EXTRACT ; balayage d'ulib : 61 OK, 69 vides, 84 EXTRACT, 7 BUILD (chaînes, listes, Seq/Map/Set, entiers machine, Bytes, Printf, Float64…), passage à l'échelle | `docs/MATRICE-FSTAR.md` |

@@ -45,6 +45,7 @@ Avant d'écrire ou de modifier du code qui s'appuie sur F*, Custard, Avalonia ou
   NativeAOT ne cross-compile pas entre OS : publier en JIT autonome pour les autres RID. L'installeur du SDK Android exige `USER` non vide
   (`XAIAD7009`) et l'acceptation de ses licences (`ACCEPT_ANDROID_LICENSES=1`, décision de l'utilisateur, jamais par défaut).
 - `app/Extracted/{Extracted.fs,FStarCustard.fs,Extracted.fsproj}` sont **générés et non versionnés** (`.gitignore`) : après un clone, lancer `scripts/extract.sh` avant toute compilation ; la CI les produit dans son job `extract` (`docs/CI.md`).
+- NativeAOT et F# : tous les projets de `app/` (sauf `HostDev`) se compilent avec `--reflectionfree` (`app/Directory.Build.props`) : sans lui le `ToString` généré des unions embarque le moteur `printf` de FSharp.Core (50 avertissements IL2xxx/IL3050). Pas de `Seq.init`/`Lazy`. Contrôle : `dotnet publish app/HostStatic -r linux-x64 -p:TrimmerSingleWarn=false` sans `warning IL` (`docs/AVERTISSEMENTS-AOT.md`).
 - Shell : ne pas utiliser `pkill -f <motif>` quand le motif figure dans sa propre ligne de commande (cela tue le shell).
 
 ## 4. Tests : **uniquement du F\***, jamais de F# (décision de l'utilisateur)

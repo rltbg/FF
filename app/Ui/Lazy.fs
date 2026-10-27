@@ -31,5 +31,15 @@ type LazyRows(count: int, get: int -> string, indexOf: string -> int) =
     member _.SyncRoot = box count
     member _.CopyTo(a: Array, index: int) = for i in 0 .. count - 1 do a.SetValue(box (get i), index + i)
   interface IEnumerable with
-    member _.GetEnumerator() : IEnumerator = (Seq.init count get :> IEnumerable).GetEnumerator()
+    // Énumérateur écrit à la main : Seq.init de FSharp.Core passe par Lazy<T> (avertissement IL2091 de l'élagueur NativeAOT, voir docs/AVERTISSEMENTS-AOT.md)
+    member _.GetEnumerator() : IEnumerator =
+      let pos = ref -1
+      { new IEnumerator with
+          member _.MoveNext() =
+            if pos.Value < count then pos.Value <- pos.Value + 1
+            pos.Value < count
+          member _.Current : obj =
+            if pos.Value < 0 || pos.Value >= count then raise (InvalidOperationException())
+            box (get pos.Value)
+          member _.Reset() = pos.Value <- -1 }
   member _.Count = count

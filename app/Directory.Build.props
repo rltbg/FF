@@ -3,5 +3,9 @@
        S'applique aussi au projet Extracted.fsproj généré par F*. HostDev (réflexion, dev seulement) est exclu. -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' != 'HostDev'">
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- Option reflectionfree du compilateur F# 10 : il ne génère plus le ToString() des unions et enregistrements par `sprintf "%+A"` (réflexion) ;
+         il l'écrit champ par champ. Ce ToString généré tirait dans le binaire NativeAOT tout le moteur printf de FSharp.Core
+         (PrintfImpl, sformat, FSharp.Reflection) et ses avertissements IL2xxx/IL3050 (docs/AVERTISSEMENTS-AOT.md). -->
+    <OtherFlags>$(OtherFlags) --reflectionfree</OtherFlags>
   </PropertyGroup>
 </Project>

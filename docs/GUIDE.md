@@ -146,7 +146,7 @@ Ce qui exige un redémarrage ou une réinitialisation : un **changement de type 
 ## 8. NativeAOT
 
 `dotnet publish -c Release -r linux-x64` (`PublishAot=true` dans `HostStatic.fsproj` ; la suite de tests F* est aussi publiée en AOT par `scripts/ftests.sh`, `IsAotCompatible` via
-`app/Directory.Build.props`). Seuls warnings : `IL3053` et `IL2104` de FSharp.Core. Règles : pas de `sprintf`/`string` sur des
+`app/Directory.Build.props`). Aucun warning sur le bureau (option `--reflectionfree`, voir `docs/AVERTISSEMENTS-AOT.md`). Règles : pas de `sprintf`/`string` sur des
 unions F# (réflexion), pas de réflexion dans `Ui`/`HostStatic` ; `HostDev` n'est pas publié en AOT.
 Mesures (`logs/startup_bench_final.log`) : livrable **34,7 Mo** (binaire 20,7 + Skia 11,2 + HarfBuzz 2,8) ; fenêtre affichée en
 **63 ms** (rendu logiciel) à **111 ms** (rendu par défaut) en médiane, contre 622 à 716 ms en JIT ; à froid 374 ms contre
