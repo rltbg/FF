@@ -18,6 +18,10 @@ Tous dans `printf.fs` (`MakeGenericMethod`, IL2060/IL3050), `sformat.fs` (affich
   - `IL3053: Assembly 'Mono.Android' produced AOT analysis warnings`, détaillé en quatre `IL3050` : `Microsoft.Android.Runtime.ManagedTypeManager.GetInvokerTypeCore` (`MakeGenericType`), `Java.Interop.JavaConvert.GetJniHandleConverter` (`MakeGenericType`), `Android.Runtime.JNINativeWrapper.CreateDelegate` (`DynamicMethod`), `Android.Runtime.JNIEnv.MakeArrayType` ;
   - `ILC: Method '[Mono.Android.Runtime]Android.Runtime.RuntimeNativeMethods.monodroid_unhandled_exception(Exception)' will always throw because: Invalid IL or CLR metadata …` et la même chose pour `monodroid_debugger_unhandled_exception(Exception)`. Ces deux méthodes sont des points d'entrée du runtime Mono, absents sous NativeAOT : si le chemin d'exception non gérée les appelle, elles lèvent. À rapprocher du constat d'`docs/ANDROID-DIAG.md` (`mono.android.Runtime.propagateUncaughtException` sans implémentation native). Rien à corriger de notre côté ; à signaler à l'amont si l'utilisateur le décide (aucun ticket déposé, aucun numéro de ticket cité : non lu).
 
+## Programme de test F* (`scripts/ftests.sh`)
+
+Le projet de test généré par Custard (`out/ftests/fs/TMain.fsproj`, hors de `app/`) ne recevait pas `app/Directory.Build.props` : il affichait encore `IL3053` et `IL2104` de FSharp.Core (même cause : `ToString` généré des unions ; son code ne contient aucun `sprintf`). `ftests.sh` passe maintenant `-p:OtherFlags=--reflectionfree` à `dotnet build` (JIT) et `dotnet publish` (AOT). Vérifié : 1 490 342 vérifications, 0 échec, JIT et AOT, aucun avertissement. L'option ne change que la forme du `ToString` des types du test, pas la sémantique mesurée.
+
 ## Règle à garder
 
 Pas de `sprintf`, `string`, `%A`, `printfn`, chaîne interpolée typée, `Seq.init`/`Lazy` ni `FSharp.Reflection` dans le code du chemin AOT (voir `CLAUDE.md` §3). Contrôle : `dotnet publish app/HostStatic -c Release -r linux-x64 -p:TrimmerSingleWarn=false` ne doit afficher aucun `warning IL`.

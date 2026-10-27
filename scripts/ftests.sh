@@ -26,7 +26,7 @@ if grep -qE "_check \(*\"[^\"]*\"\)* \(*true\)*[ )]|_check \(*\"[^\"]*\"\)* \(*t
   grep -nE "_check \(*\"[^\"]*\"\)* \(*true\)*[ )]|_check \(*\"[^\"]*\"\)* \(*true\)*$" "$O/fs/TMain.fs" | head; exit 1
 fi
 echo "extrait : $(wc -l < "$O/fs/TMain.fs") lignes F# générées, $(grep -c '_check' "$O/fs/TMain.fs") appels de check"
-(cd "$O/fs" && dotnet build -c Release --nologo -v quiet 2>&1 | grep -E "error|warning" | head -20) || true
+(cd "$O/fs" && dotnet build -c Release --nologo -v quiet -p:OtherFlags=--reflectionfree 2>&1 | grep -E "error|warning" | head -20) || true
 run_and_check() { # exécutable : sortie conservée, bloc IO comparé à ftests/IO.expected
   local rc=0; "$@" > "$O/run.out" 2>&1 || rc=$?
   grep -vE "^(IO-BEGIN|IO-END)$" "$O/run.out" | grep -vE '^(chaîne|0x|[0-9a-f]+$)' || true
@@ -36,7 +36,7 @@ run_and_check() { # exécutable : sortie conservée, bloc IO comparé à ftests/
   return $rc; }
 echo "== JIT"; run_and_check dotnet "$O/fs/bin/Release/net10.0/TMain.dll"
 if [ "${1:-}" != "--no-aot" ]; then
-  (cd "$O/fs" && dotnet publish -c Release -r linux-x64 --nologo -p:PublishAot=true -o "$O/aot" 2>&1 | grep -E "error|warning IL|->" | head -10) || true
+  (cd "$O/fs" && dotnet publish -c Release -r linux-x64 --nologo -p:PublishAot=true -p:OtherFlags=--reflectionfree -o "$O/aot" 2>&1 | grep -E "error|warning IL|->" | head -10) || true
   echo "== AOT"; run_and_check "$O/aot/TMain"
 fi
 # couverture des réalisations Custard (supported_realizations) par le F# généré de la suite
