@@ -39,8 +39,16 @@ module Shell =
   /// La vue est rendue tout de suite (il n'y a pas d'événement Opened d'une fenêtre).
   let useSingleView () =
     UiApp.MainView <- fun () ->
-      let v = Avalonia.Controls.UserControl()
-      let r = Runner(api, v)
-      attachTestHooks r
-      r.Render()
-      v :> Avalonia.Controls.Control
+      try
+        UiApp.Trace "MainView : création"
+        let v = Avalonia.Controls.UserControl()
+        let r = Runner(api, v)
+        UiApp.Trace "MainView : Runner créé"
+        attachTestHooks r
+        r.Render()
+        UiApp.Trace "MainView : premier rendu fait"
+        v :> Avalonia.Controls.Control
+      with e ->
+        // une exception ici donnerait un écran blanc : on l'affiche à l'écran
+        UiApp.Trace ("MainView : EXCEPTION " + e.ToString())
+        Avalonia.Controls.TextBlock(Text = e.ToString(), TextWrapping = Avalonia.Media.TextWrapping.Wrap) :> Avalonia.Controls.Control

@@ -13,8 +13,14 @@ type UiApp() =
   static member val OnReady : IClassicDesktopStyleApplicationLifetime -> unit = ignore with get, set
   /// Plateformes à vue unique (Android, iOS, navigateur) : fabrique de la vue principale (voir Shell.fs).
   static member val MainView : unit -> Control = (fun () -> null) with get, set
-  override this.Initialize() = this.Styles.Add(FluentTheme())
+  /// Journal de démarrage (par défaut : rien). La tête Android y branche logcat pour situer un blocage au démarrage (voir docs/ANDROID-DIAG.md).
+  static member val Trace : string -> unit = ignore with get, set
+  override this.Initialize() =
+    UiApp.Trace "UiApp.Initialize"
+    this.Styles.Add(FluentTheme())
+    UiApp.Trace "UiApp.Initialize : thème ajouté"
   override this.OnFrameworkInitializationCompleted() =
+    UiApp.Trace ("UiApp.OnFrameworkInitializationCompleted, lifetime = " + (if isNull this.ApplicationLifetime then "null" else this.ApplicationLifetime.GetType().Name))
     // Ordre : Android implémente à la fois IActivityApplicationLifetime et ISingleViewApplicationLifetime
     // (MainView « n'y est pas pleinement supporté », source Avalonia.Android/ApplicationLifetime.cs) : la fabrique d'abord.
     match this.ApplicationLifetime with
